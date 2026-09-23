@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cron_expire_draft_reservations" model="ir.cron">
+        <field name="name">Hotel: expire stale draft reservations</field>
+        <field name="model_id" ref="model_hotel_reservation"/>
+        <field name="state">code</field>
+        <field name="code">
+stale = model.search([
+    ('state', '=', 'draft'),
+    ('create_date', '&lt;', fields.Datetime.subtract(fields.Datetime.now(), days=2)),
+])
+stale.action_cancel()
+        </field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+</odoo>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hotel_housekeeping_task_list" model="ir.ui.view">
+        <field name="name">hotel.housekeeping.task.list</field>
+        <field name="model">hotel.housekeeping.task</field>
+        <field name="arch" type="xml">
+            <list
+                decoration-success="state == 'done'"
+                decoration-warning="state == 'in_progress'"
+                decoration-info="state == 'pending'"
+            >
+                <field name="name"/>
+                <field name="room_id"/>
+                <field name="task_type"/>
+                <field name="scheduled_date"/>
+                <field name="assigned_to"/>
+                <field name="completed_date"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state == 'in_progress'"
+                       decoration-info="state == 'pending'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_housekeeping_task_form" model="ir.ui.view">
+        <field name="name">hotel.housekeeping.task.form</field>
+        <field name="model">hotel.housekeeping.task</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start" type="object"
+                            string="Start" class="oe_highlight"
+                            invisible="state != 'pending'"/>
+                    <button name="action_done" type="object"
+                            string="Mark Done" class="oe_highlight"
+                            invisible="state != 'in_progress'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,in_progress,done"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Task">
+                            <field name="room_id"/>
+                            <field name="task_type"/>
+                            <field name="reservation_id"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="scheduled_date"/>
+                            <field name="assigned_to"/>
+                            <field name="completed_date"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hotel_housekeeping_task_search" model="ir.ui.view">
+        <field name="name">hotel.housekeeping.task.search</field>
+        <field name="model">hotel.housekeeping.task</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="room_id"/>
+                <field name="assigned_to"/>
+
+                <filter name="pending" string="Pending"
+                        domain="[('state','=','pending')]"/>
+                <filter name="in_progress" string="In Progress"
+                        domain="[('state','=','in_progress')]"/>
+                <filter name="done" string="Done"
+                        domain="[('state','=','done')]"/>
+                <separator/>
+                <filter name="checkout_cleaning" string="Check-out Cleaning"
+                        domain="[('task_type','=','checkout_cleaning')]"/>
+                <filter name="daily_cleaning" string="Daily Cleaning"
+                        domain="[('task_type','=','daily_cleaning')]"/>
+                <filter name="maintenance" string="Maintenance"
+                        domain="[('task_type','=','maintenance')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_room" string="Room"
+                            context="{'group_by': 'room_id'}"/>
+                    <filter name="group_task_type" string="Task Type"
+                            context="{'group_by': 'task_type'}"/>
+                    <filter name="group_assigned" string="Assigned To"
+                            context="{'group_by': 'assigned_to'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hotel_housekeeping_task" model="ir.actions.act_window">
+        <field name="name">Housekeeping</field>
+        <field name="res_model">hotel.housekeeping.task</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_housekeeping_task_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No housekeeping tasks yet
+            </p>
+            <p>
+                Tasks are automatically created when a guest checks out.
+            </p>
+        </field>
+    </record>
+
+</odoo>

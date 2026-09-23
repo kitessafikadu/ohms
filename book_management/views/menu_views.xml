@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem
+        id="menu_book_management_root"
+        name="Book Management"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_book_management_books"
+        name="Books"
+        parent="menu_book_management_root"
+        action="action_book"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_book_management_authors"
+        name="Authors"
+        parent="menu_book_management_root"
+        action="action_author"
+        sequence="20"
+    />
+
+    <menuitem
+        id="menu_book_management_categories"
+        name="Categories"
+        parent="menu_book_management_root"
+        action="action_category"
+        sequence="30"
+    />
+
+</odoo>

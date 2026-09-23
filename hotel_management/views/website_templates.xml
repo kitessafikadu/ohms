@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="public_booking_form" name="Public Booking Form">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <h1>Book your stay</h1>
+
+                <t t-if="error">
+                    <div class="alert alert-danger" t-esc="error"/>
+                </t>
+
+                <div id="client-errors" class="alert alert-danger"
+                     style="display:none;">
+                    <ul id="client-errors-list" class="mb-0"/>
+                </div>
+
+                <form action="/hotel/book/submit" method="post" class="mt-4"
+                    id="booking-form" novalidate="novalidate"
+                    enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token"
+                           t-att-value="request.csrf_token()"/>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Category</label>
+                            <select id="category" class="form-select"
+                                    required="required">
+                                <t t-foreach="categories" t-as="c">
+                                    <option t-att-value="c.id" t-esc="c.name"/>
+                                </t>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Room</label>
+                            <select name="room_id" id="room"
+                                    class="form-select" required="required">
+                                <option value="">Loading…</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label>Check-in</label>
+                            <input type="date" name="check_in_date"
+                                   id="check_in_date"
+                                   class="form-control" required="required"
+                                   t-att-min="min_check_in"/>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Check-out</label>
+                            <input type="date" name="check_out_date"
+                                   id="check_out_date"
+                                   class="form-control" required="required"
+                                   t-att-min="min_check_out"/>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Adults</label>
+                            <input type="number" name="adults" id="adults"
+                                   value="1" min="1" max="10"
+                                   class="form-control" required="required"/>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Children</label>
+                            <input type="number" name="children" id="children"
+                                   value="0" min="0" max="10"
+                                   class="form-control"/>
+                        </div>
+                    </div>
+
+                    <h4 class="mt-4">Guest Information</h4>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Full name (as on ID)</label>
+                            <input type="text" name="guest_name"
+                                   id="guest_name"
+                                   class="form-control" required="required"
+                                   title="Enter your first and last name, letters only."/>
+                            <small class="text-muted">
+                                First name and last name, letters only.
+                            </small>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>ID type</label>
+                            <select name="guest_id_type" class="form-select">
+                                <option value="passport">Passport</option>
+                                <option value="national_id">National ID</option>
+                                <option value="driver_license">Driver's License</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>ID number</label>
+                            <input type="text" name="guest_id_number"
+                                   id="guest_id_number"
+                                   class="form-control" required="required"
+                                   title="4 to 32 characters, letters/digits/hyphens."/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label>ID expiry</label>
+                            <input type="date" name="guest_id_expiry"
+                                   id="guest_id_expiry"
+                                   class="form-control"/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Date of birth</label>
+                            <input type="date" name="guest_dob"
+                                   id="guest_dob"
+                                   class="form-control" required="required"/>
+                            <small class="text-muted">Must be 18 or older.</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Vehicle plate (optional)</label>
+                            <input type="text" name="vehicle_plate"
+                                   id="vehicle_plate"
+                                   class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Upload ID scan</label>
+                        <input type="file" name="guest_id_scan"
+                            id="guest_id_scan"
+                            class="form-control"
+                            accept=".jpg,.jpeg,.png,.pdf,image/*,application/pdf"/>
+                        <small class="text-muted">
+                            JPG, PNG, or PDF. Max 5 MB.
+                            Upload a photo or scan of the government-issued ID
+                            you are presenting at check-in.
+                        </small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>&#160;</label>
+                        <div class="alert alert-info py-2 mb-0">
+                            Your ID scan is stored securely and only used for
+                            check-in verification. It is never shared.
+                        </div>
+                    </div>
+                </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Email</label>
+                            <input type="email" name="email"
+                                   id="email"
+                                   class="form-control" required="required"
+                                   title="Enter a valid email address."/>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Phone</label>
+                            <input type="tel" name="phone"
+                                   id="phone"
+                                   class="form-control" required="required"
+                                   title="10 digits (0912345678) or with country code (+251912345678)."/>
+                            <small class="text-muted">
+                                10 digits (e.g. 0912345678) or with country
+                                code (e.g. +251912345678).
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Emergency contact</label>
+                            <input type="text" name="emergency_contact_name"
+                                   id="emergency_contact_name"
+                                   class="form-control"/>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Emergency phone</label>
+                            <input type="tel" name="emergency_contact_phone"
+                                   id="emergency_contact_phone"
+                                   class="form-control"
+                                   title="Optional. Same format as phone."/>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Special requests</label>
+                        <textarea name="special_requests"
+                                  id="special_requests"
+                                  class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Request reservation
+                    </button>
+                </form>
+            </div>
+
+            <script>
+                <![CDATA[
+                (function () {
+                    'use strict';
+
+                    function setupBookingForm() {
+                        function loadRooms(categoryId) {
+                            var sel = document.getElementById('room');
+                            if (!sel) return;
+                            if (!categoryId) {
+                                sel.innerHTML = '<option value="">-- select a category first --</option>';
+                                return;
+                            }
+                            sel.innerHTML = '<option value="">Loading\u2026</option>';
+                            fetch('/hotel/rooms/' + categoryId)
+                                .then(function (r) {
+                                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                                    return r.json();
+                                })
+                                .then(function (rooms) {
+                                    if (!rooms.length) {
+                                        sel.innerHTML = '<option value="">-- no rooms available --</option>';
+                                        return;
+                                    }
+                                    sel.innerHTML = rooms.map(function (r) {
+                                        return '<option value="' + r.id + '">' +
+                                               r.name + ' \u2014 ' + r.rate +
+                                               '</option>';
+                                    }).join('');
+                                })
+                                .catch(function (err) {
+                                    sel.innerHTML = '<option value="">-- failed to load rooms --</option>';
+                                    console.error('Room fetch failed:', err);
+                                });
+                        }
+
+                        var cat = document.getElementById('category');
+                        if (cat) {
+                            cat.addEventListener('change', function () {
+                                loadRooms(this.value);
+                            });
+                            if (cat.value) {
+                                loadRooms(cat.value);
+                            }
+                        }
+
+                        var form = document.getElementById('booking-form');
+                        if (!form) return;
+
+                        var errorBox = document.getElementById('client-errors');
+                        var errorList = document.getElementById('client-errors-list');
+
+                        var NAME_RE = /^[A-Za-z][A-Za-z'\-]*(?:\s+[A-Za-z][A-Za-z'\-]*)+$/;
+                        var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/;
+                        var ID_RE = /^[A-Za-z0-9\- ]{4,32}$/;
+                        var PHONE_RE = /^(?:\+?\d{1,4}[\s\-]?)?\d{6,12}$/;
+
+                        function showErrors(errors) {
+                            if (!errors.length) {
+                                errorBox.style.display = 'none';
+                                errorList.innerHTML = '';
+                                return;
+                            }
+                            errorList.innerHTML = errors.map(function (e) {
+                                return '<li>' + e + '</li>';
+                            }).join('');
+                            errorBox.style.display = '';
+                            errorBox.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        }
+
+                        function validatePhone(raw, required) {
+                            var p = (raw || '').replace(/[\s\-()]+/g, '');
+                            if (!p) {
+                                return required ? 'Phone number is required.' : null;
+                            }
+                            if (!PHONE_RE.test(raw)) {
+                                return 'Phone format is invalid.';
+                            }
+                            var digits = p.replace(/[^\d]/g, '');
+                            if (p.charAt(0) === '+') {
+                                if (digits.length < 9 || digits.length > 15) {
+                                    return 'Phone with country code must have 9-15 digits.';
+                                }
+                            } else if (digits.length !== 10 && digits.length !== 13) {
+                                return 'Phone must be 10 digits (0912345678) or 13 digits with country code (251912345678).';
+                            }
+                            return null;
+                        }
+
+                        function validateForm() {
+                            var errors = [];
+                            function get(id) {
+                                var el = document.getElementById(id);
+                                return el ? el.value.trim() : '';
+                            }
+
+                            var name = get('guest_name');
+                            if (!name) {
+                                errors.push('Full name is required.');
+                            } else if (!NAME_RE.test(name)) {
+                                errors.push('Enter your full name (first and last, letters only).');
+                            }
+
+                            var email = get('email');
+                            if (!email) {
+                                errors.push('Email is required.');
+                            } else if (!EMAIL_RE.test(email)) {
+                                errors.push('Enter a valid email address.');
+                            }
+
+                            var phoneErr = validatePhone(get('phone'), true);
+                            if (phoneErr) errors.push(phoneErr);
+
+                            var emPhone = get('emergency_contact_phone');
+                            if (emPhone) {
+                                var emErr = validatePhone(emPhone, false);
+                                if (emErr) errors.push('Emergency phone: ' + emErr);
+                            }
+
+                            var idNum = get('guest_id_number');
+                            if (!idNum) {
+                                errors.push('ID number is required.');
+                            } else if (!ID_RE.test(idNum)) {
+                                errors.push('ID number must be 4-32 characters (letters, digits, hyphens).');
+                            }
+
+                            var dobStr = get('guest_dob');
+                            if (!dobStr) {
+                                errors.push('Date of birth is required.');
+                            } else {
+                                var dob = new Date(dobStr);
+                                var today = new Date();
+                                var age = today.getFullYear() - dob.getFullYear();
+                                var m = today.getMonth() - dob.getMonth();
+                                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                                    age--;
+                                }
+                                if (age < 18) {
+                                    errors.push('You must be at least 18 years old.');
+                                }
+                                if (dob > today) {
+                                    errors.push('Date of birth cannot be in the future.');
+                                }
+                            }
+
+                            var ci = get('check_in_date');
+                            var co = get('check_out_date');
+                            var now = new Date();
+                            var todayStr = now.getFullYear() + '-' +
+                                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                                String(now.getDate()).padStart(2, '0');
+
+                            if (!ci) {
+                                errors.push('Check-in date is required.');
+                            } else if (ci < todayStr) {
+                                errors.push('Check-in date cannot be in the past.');
+                            }
+
+                            if (!co) {
+                                errors.push('Check-out date is required.');
+                            } else if (ci && co <= ci) {
+                                errors.push('Check-out must be after check-in.');
+                            }
+
+                            var room = document.getElementById('room');
+                            if (!room || !room.value) {
+                                errors.push('Please select a room.');
+                            }
+
+                            var adults = parseInt(get('adults'), 10);
+                            if (isNaN(adults) || adults < 1) {
+                                errors.push('At least one adult is required.');
+                            }
+
+                            // ID scan file
+                            var idScan = document.getElementById('guest_id_scan');
+                            if (idScan && idScan.files && idScan.files.length) {
+                                var file = idScan.files[0];
+                                var maxSize = 5 * 1024 * 1024;
+                                if (file.size > maxSize) {
+                                    errors.push('ID scan must be smaller than 5 MB.');
+                                }
+                                var name = file.name.toLowerCase();
+                                var ok = name.endsWith('.jpg') || name.endsWith('.jpeg') ||
+                                        name.endsWith('.png') || name.endsWith('.pdf');
+                                if (!ok) {
+                                    errors.push('ID scan must be a JPG, PNG, or PDF file.');
+                                }
+                            }
+
+                            return errors;
+                        }
+
+                        form.addEventListener('submit', function (e) {
+                            var errors = validateForm();
+                            if (errors.length) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                showErrors(errors);
+                                return false;
+                            }
+                            showErrors([]);
+                            return true;
+                        });
+                    }
+
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', setupBookingForm);
+                    } else {
+                        setupBookingForm();
+                    }
+                })();
+                ]]>
+            </script>
+        </t>
+    </template>
+
+    <template id="public_booking_thanks" name="Public Booking Thanks">
+        <t t-call="website.layout">
+            <div class="container py-5">
+
+                <div class="text-center mb-5">
+                    <h1>Thank you!</h1>
+                    <p class="lead">Your booking request has been received.</p>
+                    <p>Our front desk will review and confirm shortly.</p>
+                </div>
+
+                <t t-if="reservation">
+                    <div class="card mx-auto shadow-sm" style="max-width: 640px;">
+                        <div class="card-header bg-success text-white">
+                            Reservation reference:
+                            <b t-esc="reservation.name"/>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Guest</dt>
+                                <dd class="col-sm-8" t-esc="reservation.guest_name"/>
+
+                                <dt class="col-sm-4">Room</dt>
+                                <dd class="col-sm-8" t-esc="reservation.room_id.name"/>
+
+                                <dt class="col-sm-4">Check-in</dt>
+                                <dd class="col-sm-8" t-esc="reservation.check_in_date"/>
+
+                                <dt class="col-sm-4">Check-out</dt>
+                                <dd class="col-sm-8" t-esc="reservation.check_out_date"/>
+
+                                <dt class="col-sm-4">Nights</dt>
+                                <dd class="col-sm-8" t-esc="reservation.total_nights"/>
+
+                                <dt class="col-sm-4">Adults / Children</dt>
+                                <dd class="col-sm-8">
+                                    <t t-esc="reservation.adults"/> /
+                                    <t t-esc="reservation.children"/>
+                                </dd>
+
+                                <dt class="col-sm-4">Status</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge text-bg-secondary"
+                                        t-esc="reservation.state"/>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </t>
+
+                <div class="text-center mt-4">
+                    <a href="/my/reservations" class="btn btn-primary btn-lg">
+                        View my reservations
+                    </a>
+                    <a href="/" class="btn btn-outline-secondary btn-lg">
+                        Back to home
+                    </a>
+                </div>
+
+                <div class="text-center mt-4 text-muted"
+                    t-if="partner and partner.email">
+                    <p>
+                        A confirmation will be sent to
+                        <b t-esc="partner.email"/>.
+                    </p>
+                    <p>
+                        To view your bookings online, click
+                        <b>View my reservations</b> and log in with that email.
+                        If you don't have an account yet, contact the front desk
+                        to set up portal access, or
+                        <a href="/web/signup?redirect=/my/reservations">
+                            create one now</a>.
+                    </p>
+                </div>
+
+                <p class="text-center text-muted mt-3"
+                t-if="not partner or not partner.email">
+                    Save this page or write down your reservation reference.
+                    You'll need it at check-in.
+                </p>
+
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_my_reservations" name="My Reservations">
+        <t t-call="portal.portal_layout">
+            <div class="container">
+                <h1>My Reservations</h1>
+
+                <t t-if="not reservations">
+                    <p class="text-muted">
+                        You have no reservations yet.
+                        <a href="/hotel/book">Book a stay</a>.
+                    </p>
+                </t>
+
+                <table t-if="reservations" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Ref</th>
+                            <th>Room</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>State</th>
+                            <th/>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="reservations" t-as="r">
+                            <tr>
+                                <td t-esc="r.name"/>
+                                <td t-esc="r.room_id.name"/>
+                                <td t-esc="r.check_in_date"/>
+                                <td t-esc="r.check_out_date"/>
+                                <td>
+                                    <span class="badge rounded-pill text-bg-secondary"
+                                          t-esc="r.state"/>
+                                </td>
+                                <td>
+                                    <a t-att-href="'/my/reservations/%s' % r.id"
+                                       class="btn btn-sm btn-primary">
+                                        Open
+                                    </a>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_reservation_detail" name="Reservation Detail">
+        <t t-call="portal.portal_layout">
+            <div class="container">
+                <t t-if="error">
+                    <div class="alert alert-danger" t-esc="error"/>
+                </t>
+
+                <h1 t-esc="reservation.name"/>
+                <p>
+                    <b>Room:</b> <t t-esc="reservation.room_id.name"/>
+                </p>
+                <p>
+                    <b>Check-in:</b> <t t-esc="reservation.check_in_date"/>
+                    -
+                    <b>Check-out:</b> <t t-esc="reservation.check_out_date"/>
+                </p>
+                <p><b>State:</b> <t t-esc="reservation.state"/></p>
+
+                <h3>Packages included</h3>
+                <t t-if="not reservation.package_ids">
+                    <p class="text-muted">No packages on this reservation.</p>
+                </t>
+                <ul>
+                    <t t-foreach="reservation.package_ids" t-as="pkg">
+                        <li>
+                            <b t-esc="pkg.package_id.name"/><br/>
+                            <t t-foreach="pkg.entitlement_ids" t-as="ent">
+                                <span t-esc="ent.service_id.name"/>
+                                - <span t-esc="ent.qty_remaining"/> left<br/>
+                            </t>
+                        </li>
+                    </t>
+                </ul>
+
+                <t t-if="reservation.state == 'checked_in'">
+                    <h3>Order additional services</h3>
+                    <form t-att-action="'/my/reservations/%s/order' % reservation.id"
+                          method="post">
+                        <input type="hidden" name="csrf_token"
+                               t-att-value="request.csrf_token()"/>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Item</label>
+                                <select name="service_id" class="form-select">
+                                    <t t-foreach="catalogue" t-as="item">
+                                        <option t-att-value="item.id"
+                                                t-esc="'%s - %s' % (item.name, item.unit_price)"/>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label>Quantity</label>
+                                <input type="number" name="quantity" value="1"
+                                       min="1" class="form-control"/>
+                            </div>
+                            <div class="col-md-3 mb-3 align-self-end">
+                                <button type="submit"
+                                        class="btn btn-primary">Order</button>
+                            </div>
+                        </div>
+                    </form>
+                </t>
+
+                <h3>Leave feedback</h3>
+                <form t-att-action="'/my/reservations/%s/feedback' % reservation.id"
+                      method="post">
+                    <input type="hidden" name="csrf_token"
+                           t-att-value="request.csrf_token()"/>
+                    <div class="mb-3">
+                        <label>Rating (1-5)</label>
+                        <input type="number" name="rating" min="1" max="5"
+                               value="5" class="form-control"/>
+                    </div>
+                    <div class="mb-3">
+                        <label>Comments</label>
+                        <textarea name="comments" class="form-control"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        Submit feedback
+                    </button>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_my_home_hotel" name="Portal: My Reservations link"
+              inherit_id="portal.portal_my_home">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/web/static/img/icons/star.svg'"/>
+                <t t-set="title">My Reservations</t>
+                <t t-set="url" t-value="'/my/reservations'"/>
+                <t t-set="text">View your bookings and order services.</t>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

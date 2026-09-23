@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_hotel_root" name="Hotel" sequence="15"
+              web_icon="hotel_management,static/description/icon.png"/>
+
+    <!-- ===== Front Desk & Manager ===== -->
+    <menuitem id="menu_hotel_reservations" name="Reservations"
+              parent="menu_hotel_root"
+              action="action_hotel_reservation" sequence="10"
+              groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"/>
+
+    <menuitem id="menu_hotel_rooms" name="Rooms"
+              parent="menu_hotel_root"
+              action="action_hotel_room" sequence="20"
+              groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"/>
+
+    <!-- ===== Housekeeper ===== -->
+    <menuitem id="menu_hotel_housekeeping" name="Housekeeping"
+              parent="menu_hotel_root"
+              action="action_hotel_housekeeping_task" sequence="30"
+              groups="hotel_management.group_hotel_housekeeper,hotel_management.group_hotel_manager"/>
+
+    <menuitem id="menu_hotel_room_status" name="Room Status"
+              parent="menu_hotel_root"
+              action="action_hotel_room_housekeeping" sequence="40"
+              groups="hotel_management.group_hotel_housekeeper,hotel_management.group_hotel_manager"/>
+
+    <!-- ===== Waitstaff ===== -->
+    <menuitem id="menu_hotel_room_service" name="Room Service"
+              parent="menu_hotel_root" sequence="50"
+              groups="hotel_management.group_hotel_waitstaff,hotel_management.group_hotel_manager"/>
+
+    <menuitem id="menu_hotel_room_service_orders" name="Orders"
+              parent="menu_hotel_room_service"
+              action="action_room_service_order" sequence="10"
+              groups="hotel_management.group_hotel_waitstaff,hotel_management.group_hotel_manager"/>
+
+    <!-- ===== Manager (Configuration) ===== -->
+    <menuitem id="menu_hotel_configuration" name="Configuration"
+              parent="menu_hotel_root" sequence="90"
+              groups="hotel_management.group_hotel_manager"/>
+
+    <menuitem id="menu_hotel_room_categories" name="Room Categories"
+              parent="menu_hotel_configuration"
+              action="action_hotel_room_category" sequence="10"/>
+
+    <menuitem id="menu_hotel_service_catalogue" name="F&amp;B &amp; Packages"
+              parent="menu_hotel_configuration"
+              action="action_room_service_catalogue" sequence="20"/>
+
+</odoo>

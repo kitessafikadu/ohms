@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_room_service_order_list" model="ir.ui.view">
+        <field name="name">hotel.room.service.order.list</field>
+        <field name="model">hotel.room.service.order</field>
+        <field name="arch" type="xml">
+            <list
+                decoration-muted="state == 'cancelled'"
+                decoration-success="state == 'delivered'"
+                decoration-warning="state == 'preparing'"
+                decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="order_date"/>
+                <field name="room_id"/>
+                <field name="guest_name"/>
+                <field name="source" optional="show"/>
+                <field name="service_id"/>
+                <field name="quantity"/>
+                <field name="amount" widget="monetary"/>
+                <field name="server_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'delivered'"
+                       decoration-warning="state == 'preparing'"
+                       decoration-info="state == 'draft'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_room_service_order_form" model="ir.ui.view">
+        <field name="name">hotel.room.service.order.form</field>
+        <field name="model">hotel.room.service.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_preparing" type="object"
+                            string="Preparing" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_deliver" type="object"
+                            string="Deliver &amp; Charge" class="oe_highlight"
+                            invisible="state not in ('draft', 'preparing')"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            invisible="state in ('delivered', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,preparing,delivered"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Guest">
+                            <field name="reservation_id"
+                                   options="{'no_create': True}"/>
+                            <field name="room_id"/>
+                            <field name="guest_name"/>
+                        </group>
+                        <group string="Service">
+                            <field name="server_id"/>
+                            <field name="order_date"/>
+                            <field name="delivered_date"
+                                   invisible="state != 'delivered'"/>
+                        </group>
+                    </group>
+
+                    <group string="Source">
+                        <field name="source" widget="radio"
+                               options="{'horizontal': True}"/>
+                    </group>
+
+                    <group invisible="source != 'ad_hoc'" string="Ad-hoc F&amp;B">
+                        <field name="service_id"/>
+                        <field name="quantity"/>
+                        <field name="unit_price"/>
+                        <field name="currency_id"
+                               groups="base.group_multi_currency"/>
+                        <field name="amount"/>
+                    </group>
+
+                    <group invisible="source != 'package'" string="From Package">
+                        <field name="entitlement_id"/>
+                        <field name="quantity"/>
+                    </group>
+
+                    <group>
+                        <field name="description" nolabel="1" colspan="2"
+                               placeholder="Special instructions, e.g. no onions"/>
+                    </group>
+
+                    <group>
+                        <field name="posted_to_reservation" readonly="1"
+                               invisible="not posted_to_reservation"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_room_service_order_search" model="ir.ui.view">
+        <field name="name">hotel.room.service.order.search</field>
+        <field name="model">hotel.room.service.order</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="reservation_id"/>
+                <field name="room_id"/>
+                <field name="guest_name"/>
+                <field name="service_id"/>
+                <field name="server_id"/>
+                <filter name="my_orders" string="My Orders"
+                        domain="[('server_id', '=', uid)]"/>
+                <filter name="today" string="Today"
+                        domain="[('order_date', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="preparing" string="Preparing"
+                        domain="[('state', '=', 'preparing')]"/>
+                <filter name="delivered" string="Delivered"
+                        domain="[('state', '=', 'delivered')]"/>
+                <filter name="cancelled" string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="ad_hoc" string="Chargeable"
+                        domain="[('source', '=', 'ad_hoc')]"/>
+                <filter name="package" string="From Package"
+                        domain="[('source', '=', 'package')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_server" string="Served By"
+                            context="{'group_by': 'server_id'}"/>
+                    <filter name="group_room" string="Room"
+                            context="{'group_by': 'room_id'}"/>
+                    <filter name="group_source" string="Source"
+                            context="{'group_by': 'source'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'order_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_room_service_order" model="ir.actions.act_window">
+        <field name="name">Room Service Orders</field>
+        <field name="res_model">hotel.room.service.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_room_service_order_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a room service order
+            </p>
+            <p>
+                Serve food and beverages to checked-in guests.
+                Orders can be ad-hoc (chargeable) or from a package.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_room_service_catalogue_list" model="ir.ui.view">
+        <field name="name">hotel.room.service.catalogue.list</field>
+        <field name="model">hotel.room.service</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="active == False">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="service_type"/>
+                <field name="unit_price" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_room_service_catalogue_form" model="ir.ui.view">
+        <field name="name">hotel.room.service.catalogue.form</field>
+        <field name="model">hotel.room.service</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <field name="image_1920" widget="image"
+                           class="oe_avatar"
+                           options="{'preview_image': 'image_128'}"/>
+                    <div class="oe_title">
+                        <h1><field name="name"
+                                   placeholder="e.g. Club Sandwich"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="service_type"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="unit_price"/>
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"
+                                   placeholder="Ingredients, allergens, notes…"/>
+                        </page>
+                        <page string="Package Contents"
+                              invisible="service_type != 'package'">
+                            <field name="package_line_ids">
+                                <list editable="bottom">
+                                    <field name="service_id"
+                                           domain="[('service_type', '=', 'food_beverage'), ('active', '=', True)]"/>
+                                    <field name="quantity"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_room_service_catalogue_search" model="ir.ui.view">
+        <field name="name">hotel.room.service.catalogue.search</field>
+        <field name="model">hotel.room.service</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="food_beverage" string="Food &amp; Beverage"
+                        domain="[('service_type', '=', 'food_beverage')]"/>
+                <filter name="package" string="Packages"
+                        domain="[('service_type', '=', 'package')]"/>
+                <separator/>
+                <filter name="archived" string="Archived"
+                        domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Type"
+                            context="{'group_by': 'service_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_room_service_catalogue" model="ir.actions.act_window">
+        <field name="name">F&amp;B &amp; Packages</field>
+        <field name="res_model">hotel.room.service</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_room_service_catalogue_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add your first menu item
+            </p>
+            <p>
+                Configure the food, beverages and packages your
+                waitstaff can serve to checked-in guests.
+            </p>
+        </field>
+    </record>
+
+</odoo>

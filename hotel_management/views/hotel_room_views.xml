@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =========================================================
+         ROOM CATEGORY
+         ========================================================= -->
+
+    <record id="view_hotel_room_category_list" model="ir.ui.view">
+        <field name="name">hotel.room.category.list</field>
+        <field name="model">hotel.room.category</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="capacity_adults"/>
+                <field name="capacity_children"/>
+                <field name="bed_configuration"/>
+                <field name="default_rate" widget="monetary"/>
+                <field name="room_count"/>
+                <field name="is_accessible"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_room_category_form" model="ir.ui.view">
+        <field name="name">hotel.room.category.form</field>
+        <field name="model">hotel.room.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <field name="image_1920" widget="image"
+                           class="oe_avatar"
+                           options="{'preview_image': 'image_128'}"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Deluxe"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="capacity_adults"/>
+                            <field name="capacity_children"/>
+                            <field name="bed_configuration"/>
+                            <field name="is_accessible"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Pricing">
+                            <field name="default_rate"/>
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"/>
+                        </group>
+                        <group string="Packages">
+                            <field name="package_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Target &amp; Features">
+                            <group>
+                                <field name="target_audience"
+                                       placeholder="e.g. Budget travelers, couples"/>
+                            </group>
+                            <field name="core_features"
+                                   placeholder="List the features of this room type..."/>
+                        </page>
+                        <page string="Rooms">
+                            <field name="room_ids">
+                                <list>
+                                    <field name="room_number"/>
+                                    <field name="floor"/>
+                                    <field name="view_type"/>
+                                    <field name="housekeeping_state"
+                                           widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         ROOM — Standard views
+         ========================================================= -->
+
+    <record id="view_hotel_room_list" model="ir.ui.view">
+        <field name="name">hotel.room.list</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="maintenance_hold == True"
+                  decoration-warning="housekeeping_state == 'dirty'"
+                  decoration-success="housekeeping_state == 'clean'">
+                <field name="room_number"/>
+                <field name="name"/>
+                <field name="floor"/>
+                <field name="category_id"/>
+                <field name="bed_configuration"/>
+                <field name="view_type"/>
+                <field name="rate" widget="monetary"/>
+                <field name="housekeeping_state" widget="badge"
+                       decoration-success="housekeeping_state == 'clean'"
+                       decoration-warning="housekeeping_state == 'dirty'"
+                       decoration-info="housekeeping_state == 'cleaning'"/>
+                <field name="maintenance_hold"/>
+                <field name="is_available_now" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_room_form" model="ir.ui.view">
+        <field name="name">hotel.room.form</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="room_number"/></h1>
+                        <h2><field name="name" readonly="1"/></h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="floor"/>
+                            <field name="category_id"/>
+                            <field name="bed_configuration"/>
+                            <field name="view_type"/>
+                            <field name="is_accessible"/>
+                        </group>
+                        <group>
+                            <field name="rate"/>
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"/>
+                            <field name="housekeeping_state"/>
+                            <field name="maintenance_hold"/>
+                            <field name="maintenance_note"
+                                   invisible="not maintenance_hold"/>
+                            <field name="is_available_now" readonly="1"/>
+                            <field name="next_arrival_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Reservations"
+                              groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager">
+                            <field name="reservation_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="guest_name"/>
+                                    <field name="check_in_date"/>
+                                    <field name="check_out_date"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         ROOM — Housekeeper-specific views
+         ========================================================= -->
+
+    <record id="view_hotel_room_housekeeping_list" model="ir.ui.view">
+        <field name="name">hotel.room.housekeeping.list</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false"
+                  decoration-danger="maintenance_hold == True"
+                  decoration-warning="housekeeping_state == 'dirty'"
+                  decoration-info="housekeeping_state == 'cleaning'"
+                  decoration-success="housekeeping_state == 'clean'">
+                <field name="room_number"/>
+                <field name="floor"/>
+                <field name="category_id"/>
+                <field name="housekeeping_state" widget="badge"
+                       decoration-success="housekeeping_state == 'clean'"
+                       decoration-warning="housekeeping_state == 'dirty'"
+                       decoration-info="housekeeping_state == 'cleaning'"/>
+                <field name="maintenance_hold"/>
+                <field name="maintenance_note"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_room_housekeeping_form" model="ir.ui.view">
+        <field name="name">hotel.room.housekeeping.form</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="room_number" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="floor" readonly="1"/>
+                            <field name="category_id" readonly="1"/>
+                            <field name="bed_configuration" readonly="1"/>
+                            <field name="view_type" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="housekeeping_state"/>
+                            <field name="maintenance_hold"/>
+                            <field name="maintenance_note"
+                                   invisible="not maintenance_hold"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         ROOM — Search view
+         ========================================================= -->
+
+    <record id="view_hotel_room_search" model="ir.ui.view">
+        <field name="name">hotel.room.search</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="room_number"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="view_type"/>
+                <filter name="available_now" string="Available Now"
+                        domain="[('is_available_now', '=', True)]"/>
+                <filter name="maintenance" string="On Maintenance"
+                        domain="[('maintenance_hold', '=', True)]"/>
+                <filter name="dirty" string="Needs Cleaning"
+                        domain="[('housekeeping_state', '=', 'dirty')]"/>
+                <filter name="cleaning" string="Being Cleaned"
+                        domain="[('housekeeping_state', '=', 'cleaning')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_category" string="Category"
+                            context="{'group_by': 'category_id'}"/>
+                    <filter name="group_housekeeping" string="Housekeeping"
+                            context="{'group_by': 'housekeeping_state'}"/>
+                    <filter name="group_floor" string="Floor"
+                            context="{'group_by': 'floor'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         ACTIONS — one each, no duplicates
+         ========================================================= -->
+
+    <record id="action_hotel_room" model="ir.actions.act_window">
+        <field name="name">Rooms</field>
+        <field name="res_model">hotel.room</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_room_search"/>
+    </record>
+
+    <record id="action_hotel_room_housekeeping" model="ir.actions.act_window">
+        <field name="name">Room Status</field>
+        <field name="res_model">hotel.room</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_hotel_room_housekeeping_list"/>
+        <field name="context">{'create': False, 'delete': False}</field>
+    </record>
+
+    <record id="action_hotel_room_category" model="ir.actions.act_window">
+        <field name="name">Room Categories</field>
+        <field name="res_model">hotel.room.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

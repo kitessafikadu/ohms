@@ -1,0 +1,63 @@
+
+/* ---------- Website Header ---------- */
+
+header#top .navbar-brand {
+    display: flex;
+    align-items: center;
+
+    width: 160px;
+    height: 55px;
+
+    background-image: url("/hotel_management/static/src/img/logo.png");
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: contain;
+
+    font-size: 0;
+}
+
+
+/* ---------- Website Logo Image ---------- */
+
+header#top .navbar-brand img {
+    max-height: 50px;
+    width: auto;
+}
+
+
+/* ---------- Homepage ---------- */
+
+#wrapwrap {
+    min-height: 100vh;
+}
+
+
+/* ---------- Homepage branding section ---------- */
+
+.hotel-home-branding {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 40px 20px;
+}
+
+.hotel-home-branding img {
+    width: 220px;
+    height: auto;
+}
+
+
+/* ---------- Footer ---------- */
+
+footer .hotel-footer-logo {
+    display: block;
+
+    width: 160px;
+    height: 60px;
+
+    background-image: url("/hotel_management/static/src/img/logo.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}

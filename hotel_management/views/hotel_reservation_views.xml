@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hotel_reservation_list" model="ir.ui.view">
+        <field name="name">hotel.reservation.list</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+            <list
+                decoration-info="state == 'draft'"
+                decoration-success="state == 'checked_in'"
+                decoration-muted="state in ('checked_out', 'cancelled')"
+                decoration-warning="payment_status == 'pending' and state == 'checked_out'"
+            >
+                <field name="name"/>
+                <field name="guest_name"/>
+                <field name="guest_id_type"/>
+                <field name="guest_id_number"/>
+                <field name="room_id"/>
+                <field name="category_id"/>
+                <field name="check_in_date"/>
+                <field name="check_out_date"/>
+                <field name="total_nights"/>
+                <field name="adults"/>
+                <field name="children"/>
+                <field name="rate" widget="monetary"/>
+                <field name="total_amount" widget="monetary"/>
+                <field name="payment_status" widget="badge"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hotel_reservation_form" model="ir.ui.view">
+        <field name="name">hotel.reservation.form</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object"
+                            string="Confirm" class="oe_highlight"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state != 'draft'"/>
+                    <button name="action_check_in" type="object"
+                            string="Check-In" class="oe_highlight"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_check_out" type="object"
+                            string="Check-Out" class="oe_highlight"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state != 'checked_in'"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state in ('checked_out', 'cancelled')"/>
+                    <button name="action_set_draft" type="object"
+                            string="Reset to Draft"
+                            groups="hotel_management.group_hotel_manager"
+                            invisible="state not in ('cancelled', 'checked_out')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,checked_in,checked_out"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group string="Guest Identification">
+                        <group>
+                            <field name="guest_id"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="guest_name"
+                                   readonly="state != 'draft'"/>
+                            <field name="guest_dob"
+                                   readonly="state != 'draft'"/>
+                            <field name="guest_age" readonly="1"/>
+                            <field name="is_adult" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="guest_id_type"
+                                   readonly="state != 'draft'"/>
+                            <field name="guest_id_number"
+                                   readonly="state != 'draft'"/>
+                            <field name="guest_id_expiry"
+                                   readonly="state != 'draft'"/>
+                            <field name="guest_id_scan"
+                                    filename="guest_id_scan_filename"
+                                    readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+
+                    <group string="Contact Details">
+                        <group>
+                            <field name="guest_email"
+                                   widget="email"
+                                   readonly="state != 'draft'"/>
+                            <field name="guest_phone"
+                                   widget="phone"
+                                   readonly="state != 'draft'"/>
+                            <field name="vehicle_plate"
+                                   readonly="state in ('checked_out', 'cancelled')"/>
+                        </group>
+                        <group string="Emergency Contact">
+                            <field name="emergency_contact_name"
+                                   readonly="state in ('checked_out', 'cancelled')"/>
+                            <field name="emergency_contact_phone"
+                                   widget="phone"
+                                   readonly="state in ('checked_out', 'cancelled')"/>
+                            <field name="emergency_contact_relation"
+                                   readonly="state in ('checked_out', 'cancelled')"/>
+                        </group>
+                    </group>
+
+                    <group string="Stay">
+                        <group>
+                            <field name="room_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="category_id" readonly="1"/>
+                            <field name="check_in_date"
+                                options="{'min_date': 'today'}"
+                                   readonly="state != 'draft'"/>
+                            <field name="check_out_date"
+                                   widget="hotel_date_after"
+                                   options="{'min_date': 'tomorrow'}"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="total_nights" readonly="1"/>
+                            <field name="adults"
+                                   readonly="state != 'draft'"/>
+                            <field name="children"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+
+                    <group string="Preferences">
+                        <group>
+                            <field name="bed_preference"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group/>
+                    </group>
+                    <group>
+                        <field name="accessibility_needs"
+                               placeholder="Mobility, medical, dietary or other needs…"
+                               readonly="state in ('checked_out', 'cancelled')"/>
+                        <field name="special_requests"
+                               placeholder="Late check-in, extra pillows, etc."
+                               readonly="state in ('checked_out', 'cancelled')"/>
+                    </group>
+
+                    <group string="Billing"
+                           groups="hotel_management.group_hotel_frontdesk">
+                        <group>
+                            <field name="rate" readonly="state != 'draft'"/>
+                            <field name="packages_total" readonly="1"/>
+                            <field name="extra_charges"
+                                   readonly="state in ('checked_out', 'cancelled')"/>
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"
+                                   readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="total_amount" readonly="1"/>
+                            <field name="payment_status"/>
+                            <field name="company_name"
+                                   readonly="state in ('checked_out', 'cancelled')"/>
+                            <field name="tax_id"
+                                   readonly="state in ('checked_out', 'cancelled')"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Companions" name="companions">
+                            <field name="companion_ids"
+                                   readonly="state in ('checked_out', 'cancelled')">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="relationship"/>
+                                    <field name="id_type"/>
+                                    <field name="id_number"/>
+                                    <field name="id_expiry"/>
+                                    <field name="dob"/>
+                                    <field name="age"/>
+                                    <field name="is_adult"/>
+                                </list>
+                            </field>
+                            <field name="companion_count" invisible="1"/>
+                        </page>
+
+                        <page string="Packages" name="packages">
+                            <field name="package_ids"
+                                   readonly="state in ('checked_out', 'cancelled')">
+                                <list editable="bottom">
+                                    <field name="package_id"/>
+                                    <field name="price"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Notes" name="notes">
+                            <field name="notes"
+                                   placeholder="Internal notes for this booking…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hotel_reservation_search" model="ir.ui.view">
+        <field name="name">hotel.reservation.search</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="guest_id"/>
+                <field name="guest_name"/>
+                <field name="guest_id_number"/>
+                <field name="guest_email"/>
+                <field name="guest_phone"/>
+                <field name="room_id"/>
+                <field name="check_in_date"/>
+
+                <filter name="draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="confirmed" string="Confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="checked_in" string="Checked-In"
+                        domain="[('state', '=', 'checked_in')]"/>
+                <filter name="checked_out" string="Checked-Out"
+                        domain="[('state', '=', 'checked_out')]"/>
+                <filter name="cancelled" string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+
+                <separator/>
+
+                <filter name="checking_in_today" string="Arriving Today"
+                        domain="[('check_in_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="checking_out_today" string="Departing Today"
+                        domain="[('check_out_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+
+                <separator/>
+
+                <filter name="unpaid" string="Unpaid"
+                        domain="[('payment_status', '=', 'pending')]"/>
+                <filter name="paid" string="Paid"
+                        domain="[('payment_status', '=', 'paid')]"/>
+
+                <separator/>
+
+                <filter name="international" string="International (Passport)"
+                        domain="[('guest_id_type', '=', 'passport')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_room" string="Room"
+                            context="{'group_by': 'room_id'}"/>
+                    <filter name="group_category" string="Room Category"
+                            context="{'group_by': 'category_id'}"/>
+                    <filter name="group_guest" string="Guest"
+                            context="{'group_by': 'guest_id'}"/>
+                    <filter name="group_payment" string="Payment Status"
+                            context="{'group_by': 'payment_status'}"/>
+                    <filter name="group_checkin_month" string="Check-in Month"
+                            context="{'group_by': 'check_in_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hotel_reservation" model="ir.actions.act_window">
+        <field name="name">Reservations</field>
+        <field name="res_model">hotel.reservation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_reservation_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new reservation
+            </p>
+            <p>
+                Record guest identity, room assignment and stay dates.
+                The front desk can confirm, check in and check out guests.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_hotel_reservation_today" model="ir.actions.act_window">
+        <field name="name">Today's Arrivals</field>
+        <field name="res_model">hotel.reservation</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">
+            [('check_in_date', '=', context_today().strftime('%Y-%m-%d'))]
+        </field>
+        <field name="context">
+            {'search_default_checking_in_today': 1}
+        </field>
+    </record>
+
+</odoo>
