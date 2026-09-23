@@ -9,10 +9,12 @@
                 decoration-success="state == 'done'"
                 decoration-warning="state == 'in_progress'"
                 decoration-info="state == 'pending'"
+                decoration-danger="priority == '2'"
             >
                 <field name="name"/>
                 <field name="room_id"/>
                 <field name="task_type"/>
+                <field name="priority" widget="priority"/>
                 <field name="scheduled_date"/>
                 <field name="assigned_to"/>
                 <field name="completed_date"/>
@@ -49,18 +51,21 @@
                         <group string="Task">
                             <field name="room_id"/>
                             <field name="task_type"/>
-                            <field name="reservation_id"/>
+                            <field name="reservation_id"
+                                   groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"/>
                         </group>
                         <group string="Schedule">
                             <field name="scheduled_date"/>
                             <field name="assigned_to"/>
                             <field name="completed_date"/>
+                            <field name="priority" widget="priority"/>
                         </group>
                     </group>
 
                     <notebook>
                         <page string="Notes">
-                            <field name="notes"/>
+                            <field name="notes"
+                                   placeholder="Spills, broken items, guest requests…"/>
                         </page>
                     </notebook>
                 </sheet>
@@ -92,6 +97,11 @@
                         domain="[('task_type','=','daily_cleaning')]"/>
                 <filter name="maintenance" string="Maintenance"
                         domain="[('task_type','=','maintenance')]"/>
+                <separator/>
+                <filter name="urgent" string="Urgent"
+                        domain="[('priority','in',('1','2'))]"/>
+                <filter name="my_tasks" string="Assigned to me"
+                        domain="[('assigned_to','=',uid)]"/>
 
                 <group expand="0" string="Group By">
                     <filter name="group_state" string="State"
@@ -102,15 +112,62 @@
                             context="{'group_by': 'task_type'}"/>
                     <filter name="group_assigned" string="Assigned To"
                             context="{'group_by': 'assigned_to'}"/>
+                    <filter name="group_priority" string="Priority"
+                            context="{'group_by': 'priority'}"/>
                 </group>
             </search>
+        </field>
+    </record>
+
+    <record id="view_hotel_housekeeping_task_calendar" model="ir.ui.view">
+        <field name="name">hotel.housekeeping.task.calendar</field>
+        <field name="model">hotel.housekeeping.task</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Housekeeping Schedule"
+                date_start="scheduled_date"
+                color="state"
+                event_open_popup="true"
+                quick_create="false"
+                mode="week"
+            >
+                <field name="room_id"/>
+                <field name="task_type"/>
+                <field name="state"/>
+                <field name="priority"/>
+                <field name="assigned_to"/>
+                <field name="notes"/>
+
+                <filter name="pending" string="Pending"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter name="in_progress" string="In Progress"
+                        domain="[('state', '=', 'in_progress')]"/>
+                <filter name="done" string="Done"
+                        domain="[('state', '=', 'done')]"/>
+                <filter name="open" string="Open Tasks"
+                        domain="[('state', 'in', ('pending', 'in_progress'))]"/>
+
+                <filter name="urgent" string="Urgent"
+                        domain="[('priority', 'in', ('1', '2'))]"/>
+                <filter name="my_tasks" string="Assigned to me"
+                        domain="[('assigned_to', '=', uid)]"/>
+                <separator/>
+                <filter name="today" string="Today"
+                        domain="[('scheduled_date', '&gt;=',
+                                 context_today().strftime('%Y-%m-%d')),
+                                ('scheduled_date', '&lt;',
+                                 (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="this_week" string="This Week"
+                        domain="[('scheduled_date', '&gt;=',
+                                 (context_today() + relativedelta(weekday=0)).strftime('%Y-%m-%d'))]"/>
+            </calendar>
         </field>
     </record>
 
     <record id="action_hotel_housekeeping_task" model="ir.actions.act_window">
         <field name="name">Housekeeping</field>
         <field name="res_model">hotel.housekeeping.task</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list,calendar,form</field>
         <field name="search_view_id" ref="view_hotel_housekeeping_task_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
