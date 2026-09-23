@@ -15,7 +15,7 @@
                 decoration-danger="priority == '2'"
             >
                 <field name="name"/>
-                <field name="room_id"/>
+                <field name="room_number"/>
                 <field name="task_type"/>
                 <field name="priority" widget="priority"/>
                 <field name="scheduled_date"/>
@@ -56,6 +56,8 @@
                     <group>
                         <group string="Task">
                             <field name="room_id"/>
+                            <field name="room_number"/>
+                            <field name="room_category_id"/>
                             <field name="task_type"/>
                             <field name="reservation_id"
                                    groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"/>
@@ -91,6 +93,7 @@
             <search>
                 <field name="name"/>
                 <field name="room_id"/>
+                <field name="room_number"/>
                 <field name="assigned_to"/>
 
                 <filter name="pending" string="Pending"
@@ -118,14 +121,6 @@
                 <filter name="maintenance" string="Maintenance"
                         domain="[('task_type', '=', 'maintenance')]"/>
 
-                <separator/>
-
-                <filter name="today" string="Today"
-                        domain="[('scheduled_date', '&gt;=',
-                                 context_today().strftime('%Y-%m-%d')),
-                                ('scheduled_date', '&lt;',
-                                 (context_today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d'))]"/>
-
                 <group expand="0" string="Group By">
                     <filter name="group_state" string="State"
                             context="{'group_by': 'state'}"/>
@@ -143,7 +138,7 @@
     </record>
 
     <!-- =========================================================
-         CALENDAR
+         CALENDAR — only fields, no filters
          ========================================================= -->
     <record id="view_hotel_housekeeping_task_calendar" model="ir.ui.view">
         <field name="name">hotel.housekeeping.task.calendar</field>
@@ -157,6 +152,7 @@
                 quick_create="false"
                 mode="week"
             >
+                <field name="room_number"/>
                 <field name="room_id"/>
                 <field name="task_type"/>
                 <field name="state"/>

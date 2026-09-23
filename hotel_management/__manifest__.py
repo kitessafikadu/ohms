@@ -1,6 +1,6 @@
 {
     'name': 'Hotel Management',
-    'version': '18.0.1.2.0',
+    'version': '18.0.1.2.1',
     'category': 'Services',
     'summary': 'Reservations, rooms, housekeeping, F&B, guest portal',
     'depends': ['base', 'mail', 'website', 'portal'],
