@@ -12,7 +12,7 @@
                 decoration-info="state == 'draft'"
                 decoration-success="state == 'checked_in'"
                 decoration-muted="state in ('checked_out', 'cancelled')"
-                decoration-warning="payment_status == 'pending' and state == 'checked_out'"
+                decoration-warning="invoice_status == 'to_invoice' and state == 'checked_out'"
             >
                 <field name="name"/>
                 <field name="guest_name"/>
@@ -27,6 +27,10 @@
                 <field name="children"/>
                 <field name="rate" widget="monetary"/>
                 <field name="total_amount" widget="monetary"/>
+                <field name="invoice_status" widget="badge"
+                       decoration-success="invoice_status == 'invoiced'"
+                       decoration-warning="invoice_status == 'to_invoice'"
+                       decoration-muted="invoice_status == 'nothing_to_invoice'"/>
                 <field name="payment_status" widget="badge"/>
                 <field name="state" widget="badge"/>
             </list>
@@ -54,6 +58,10 @@
                             string="Check-Out" class="oe_highlight"
                             groups="hotel_management.group_hotel_frontdesk"
                             invisible="state != 'checked_in'"/>
+                    <button name="action_create_invoice" type="object"
+                            string="Create Invoice"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state != 'checked_out' or invoice_status == 'invoiced'"/>
                     <button name="action_cancel" type="object"
                             string="Cancel"
                             groups="hotel_management.group_hotel_frontdesk"
@@ -67,6 +75,16 @@
                 </header>
 
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                invisible="invoice_count == 0">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Invoices"/>
+                        </button>
+                    </div>
+
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
@@ -93,6 +111,7 @@
                             <field name="guest_id_scan"
                                    filename="guest_id_scan_filename"
                                    readonly="state != 'draft'"/>
+                            <field name="guest_id_scan_filename" invisible="1"/>
                         </group>
                     </group>
 
@@ -169,6 +188,11 @@
                         </group>
                         <group>
                             <field name="total_amount" readonly="1"/>
+                            <field name="invoiced_amount" readonly="1"/>
+                            <field name="invoice_status" widget="badge"
+                                   decoration-success="invoice_status == 'invoiced'"
+                                   decoration-warning="invoice_status == 'to_invoice'"
+                                   decoration-muted="invoice_status == 'nothing_to_invoice'"/>
                             <field name="payment_status"/>
                             <field name="company_name"
                                    readonly="state in ('checked_out', 'cancelled')"/>
@@ -219,7 +243,7 @@
     </record>
 
     <!-- =========================================================
-         SEARCH  ← this drives both list and calendar filters
+         SEARCH
          ========================================================= -->
     <record id="view_hotel_reservation_search" model="ir.ui.view">
         <field name="name">hotel.reservation.search</field>
@@ -258,15 +282,19 @@
 
                 <separator/>
 
+                <filter name="to_invoice" string="To Invoice"
+                        domain="[('invoice_status', '=', 'to_invoice')]"/>
+                <filter name="invoiced" string="Fully Invoiced"
+                        domain="[('invoice_status', '=', 'invoiced')]"/>
                 <filter name="unpaid" string="Unpaid"
                         domain="[('payment_status', '=', 'pending')]"/>
                 <filter name="paid" string="Paid"
                         domain="[('payment_status', '=', 'paid')]"/>
-                <filter name="international" string="International (Passport)"
-                        domain="[('guest_id_type', '=', 'passport')]"/>
 
                 <separator/>
 
+                <filter name="international" string="International (Passport)"
+                        domain="[('guest_id_type', '=', 'passport')]"/>
                 <filter name="my_records" string="Created by me"
                         domain="[('create_uid', '=', uid)]"/>
 
@@ -279,6 +307,8 @@
                             context="{'group_by': 'category_id'}"/>
                     <filter name="group_guest" string="Guest"
                             context="{'group_by': 'guest_id'}"/>
+                    <filter name="group_invoice_status" string="Invoice Status"
+                            context="{'group_by': 'invoice_status'}"/>
                     <filter name="group_payment" string="Payment Status"
                             context="{'group_by': 'payment_status'}"/>
                     <filter name="group_checkin_month" string="Check-in Month"
@@ -289,7 +319,7 @@
     </record>
 
     <!-- =========================================================
-         CALENDAR  ← fields only, no <filter> children
+         CALENDAR
          ========================================================= -->
     <record id="view_hotel_reservation_calendar" model="ir.ui.view">
         <field name="name">hotel.reservation.calendar</field>
@@ -328,7 +358,8 @@
             </p>
             <p>
                 Record guest identity, room assignment and stay dates.
-                The front desk can confirm, check in and check out guests.
+                The front desk can confirm, check in, check out and
+                invoice guests.
             </p>
         </field>
     </record>
@@ -342,6 +373,19 @@
         </field>
         <field name="context">
             {'search_default_checking_in_today': 1}
+        </field>
+    </record>
+
+    <record id="action_hotel_reservation_to_invoice"
+           model="ir.actions.act_window">
+        <field name="name">To Invoice</field>
+        <field name="res_model">hotel.reservation</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">
+            [('invoice_status', '=', 'to_invoice')]
+        </field>
+        <field name="context">
+            {'search_default_to_invoice': 1}
         </field>
     </record>
 

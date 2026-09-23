@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="product_hotel_room" model="product.product">
+            <field name="name">Hotel Room - Nightly Rate</field>
+            <field name="type">service</field>
+            <field name="list_price">0.00</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+        </record>
+
+        <record id="product_hotel_package" model="product.product">
+            <field name="name">Hotel Package</field>
+            <field name="type">service</field>
+            <field name="list_price">0.00</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+        </record>
+
+        <record id="product_hotel_extra" model="product.product">
+            <field name="name">Hotel Extra Charges</field>
+            <field name="type">service</field>
+            <field name="list_price">0.00</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

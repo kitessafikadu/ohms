@@ -1,11 +1,9 @@
-import re
 from datetime import date, timedelta
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 MIN_AGE = 18
-ID_NUMBER_RE = re.compile(r'^[A-Za-z0-9\- ]{4,32}$')
 
 
 class HotelReservation(models.Model):
@@ -20,6 +18,9 @@ class HotelReservation(models.Model):
         readonly=True, copy=False,
     )
 
+    # =================================================================
+    # Guest identity
+    # =================================================================
     guest_id = fields.Many2one('res.partner', required=True, tracking=True)
     guest_name = fields.Char(
         string='Full Name (as on ID)', required=True, tracking=True,
@@ -39,6 +40,9 @@ class HotelReservation(models.Model):
     guest_age = fields.Integer(compute='_compute_guest_age', store=True)
     is_adult = fields.Boolean(compute='_compute_guest_age', store=True)
 
+    # =================================================================
+    # Contact
+    # =================================================================
     guest_email = fields.Char(string='Email')
     guest_phone = fields.Char(string='Phone')
     email = fields.Char(related='guest_email', store=True, readonly=False)
@@ -50,6 +54,9 @@ class HotelReservation(models.Model):
 
     vehicle_plate = fields.Char(string='Vehicle Plate')
 
+    # =================================================================
+    # Stay
+    # =================================================================
     room_id = fields.Many2one('hotel.room', required=True, tracking=True)
     category_id = fields.Many2one(
         related='room_id.category_id', store=True, readonly=True,
@@ -61,6 +68,9 @@ class HotelReservation(models.Model):
     adults = fields.Integer(default=1, required=True)
     children = fields.Integer(default=0, required=True)
 
+    # =================================================================
+    # Preferences
+    # =================================================================
     bed_preference = fields.Selection(
         [('single', 'Single'), ('twin', 'Twin'),
          ('queen', 'Queen'), ('king', 'King')],
@@ -68,20 +78,31 @@ class HotelReservation(models.Model):
     accessibility_needs = fields.Text()
     special_requests = fields.Text()
 
+    # =================================================================
+    # Companions
+    # =================================================================
     companion_ids = fields.One2many(
         'hotel.reservation.guest', 'reservation_id',
         string='Additional Guests',
     )
     companion_count = fields.Integer(compute='_compute_companion_count')
 
+    # =================================================================
+    # Packages — charged separately
+    # =================================================================
     package_ids = fields.One2many(
         'hotel.reservation.package', 'reservation_id',
+        string='Packages',
     )
     packages_total = fields.Monetary(
         compute='_compute_packages_total', store=True,
         currency_field='currency_id',
+        help='Total value of packages booked on this reservation.',
     )
 
+    # =================================================================
+    # Billing
+    # =================================================================
     rate = fields.Monetary(currency_field='currency_id', tracking=True)
     extra_charges = fields.Monetary(currency_field='currency_id')
     payment_status = fields.Selection(
@@ -103,6 +124,34 @@ class HotelReservation(models.Model):
     company_name = fields.Char(string='Company (for invoice)')
     tax_id = fields.Char(string='Tax ID / VAT')
 
+    # =================================================================
+    # Invoicing
+    # =================================================================
+    invoice_ids = fields.One2many(
+        'account.move', 'hotel_reservation_id',
+        string='Invoices',
+        domain=[('move_type', '=', 'out_invoice')],
+    )
+    credit_note_ids = fields.One2many(
+        'account.move', 'hotel_reservation_id',
+        string='Credit Notes',
+        domain=[('move_type', '=', 'out_refund')],
+    )
+    invoice_count = fields.Integer(compute='_compute_invoice_count')
+    invoiced_amount = fields.Monetary(
+        compute='_compute_invoiced_amount', store=True,
+        currency_field='currency_id',
+    )
+    invoice_status = fields.Selection(
+        [('nothing_to_invoice', 'Nothing to Invoice'),
+         ('to_invoice', 'To Invoice'),
+         ('invoiced', 'Fully Invoiced')],
+        compute='_compute_invoice_status', store=True,
+    )
+
+    # =================================================================
+    # State
+    # =================================================================
     state = fields.Selection(
         [('draft', 'Draft'),
          ('confirmed', 'Confirmed'),
@@ -115,7 +164,7 @@ class HotelReservation(models.Model):
     notes = fields.Text()
 
     # =================================================================
-    # Computes
+    # Computes — charges
     # =================================================================
     @api.depends('check_in_date', 'check_out_date')
     def _compute_total_nights(self):
@@ -161,7 +210,36 @@ class HotelReservation(models.Model):
             )
 
     # =================================================================
-    # Onchange — keep dates ordered without silently changing past dates
+    # Computes — invoicing
+    # =================================================================
+    @api.depends('invoice_ids')
+    def _compute_invoice_count(self):
+        for rec in self:
+            rec.invoice_count = len(rec.invoice_ids)
+
+    @api.depends('invoice_ids', 'invoice_ids.state',
+                 'invoice_ids.amount_total')
+    def _compute_invoiced_amount(self):
+        for rec in self:
+            posted = rec.invoice_ids.filtered(lambda m: m.state == 'posted')
+            rec.invoiced_amount = sum(posted.mapped('amount_total'))
+
+    @api.depends('total_amount', 'invoiced_amount', 'state')
+    def _compute_invoice_status(self):
+        for rec in self:
+            if rec.state == 'cancelled':
+                rec.invoice_status = 'nothing_to_invoice'
+            elif rec.total_amount <= 0:
+                rec.invoice_status = 'nothing_to_invoice'
+            elif rec.invoiced_amount >= rec.total_amount:
+                rec.invoice_status = 'invoiced'
+            elif rec.state in ('checked_in', 'checked_out'):
+                rec.invoice_status = 'to_invoice'
+            else:
+                rec.invoice_status = 'nothing_to_invoice'
+
+    # =================================================================
+    # Onchange
     # =================================================================
     @api.onchange('check_in_date')
     def _onchange_check_in_date(self):
@@ -169,10 +247,12 @@ class HotelReservation(models.Model):
             return
         today = fields.Date.context_today(self)
         if self.check_in_date < today:
+            self.check_in_date = today
             return {
                 'warning': {
                     'title': 'Invalid check-in date',
-                    'message': 'Check-in date cannot be in the past.',
+                    'message': 'Check-in date cannot be in the past. '
+                               'It has been set to today.',
                 }
             }
         if (self.check_out_date
@@ -185,10 +265,12 @@ class HotelReservation(models.Model):
             return
         today = fields.Date.context_today(self)
         if self.check_out_date < today:
+            self.check_out_date = today + timedelta(days=1)
             return {
                 'warning': {
                     'title': 'Invalid check-out date',
-                    'message': 'Check-out date cannot be in the past.',
+                    'message': 'Check-out date cannot be in the past. '
+                               'It has been set to tomorrow.',
                 }
             }
         if (self.check_in_date
@@ -245,16 +327,6 @@ class HotelReservation(models.Model):
                     raise ValidationError(
                         f'Primary guest must be at least {MIN_AGE} years old.'
                     )
-
-    @api.constrains('guest_id_number')
-    def _check_guest_id_number(self):
-        for rec in self:
-            if not rec.guest_id_number or not ID_NUMBER_RE.fullmatch(
-                    rec.guest_id_number.strip()):
-                raise ValidationError(
-                    'ID number must be 4 to 32 characters using only letters, '
-                    'digits, hyphens, or spaces.'
-                )
 
     @api.constrains('adults', 'children', 'room_id')
     def _check_capacity(self):
@@ -400,22 +472,131 @@ class HotelReservation(models.Model):
         if not room:
             return
         room.housekeeping_state = 'dirty'
+
+        today = fields.Date.context_today(self)
+        next_arrival = self.env['hotel.reservation'].search([
+            ('id', '!=', self.id),
+            ('room_id', '=', room.id),
+            ('state', '=', 'confirmed'),
+            ('check_in_date', '=', today),
+        ], limit=1)
+
         Task = self.env['hotel.housekeeping.task'].sudo()
         existing = Task.search([
             ('reservation_id', '=', self.id),
             ('task_type', '=', 'checkout_cleaning'),
             ('state', '!=', 'done'),
         ], limit=1)
+
         if not existing:
             Task.create({
                 'room_id': room.id,
                 'reservation_id': self.id,
                 'task_type': 'checkout_cleaning',
                 'scheduled_date': fields.Datetime.now(),
+                'priority': '2' if next_arrival else '0',
             })
+
         self.message_post(body=(
             f'Guest checked out. Room <b>{room.name}</b> flagged Dirty.'
         ))
+
+    # =================================================================
+    # Invoicing
+    # =================================================================
+    def _prepare_invoice_lines(self):
+        """Build the invoice line commands for the current charges."""
+        self.ensure_one()
+        lines = []
+
+        # Room nights
+        if self.total_nights and self.rate:
+            room_product = self.env.ref(
+                'hotel_management.product_hotel_room', raise_if_not_found=False)
+            lines.append((0, 0, {
+                'product_id': room_product.id if room_product else False,
+                'name': (
+                    f"Room {self.room_id.name}"
+                    f"{' — ' + self.category_id.name if self.category_id else ''}\n"
+                    f"{self.check_in_date} → {self.check_out_date}\n"
+                    f"{self.total_nights} night(s)"
+                ),
+                'quantity': self.total_nights,
+                'price_unit': self.rate,
+            }))
+
+        # Packages (charged separately)
+        package_product = self.env.ref(
+            'hotel_management.product_hotel_package', raise_if_not_found=False)
+        for pkg in self.package_ids.filtered(lambda p: p.price):
+            lines.append((0, 0, {
+                'product_id': package_product.id if package_product else False,
+                'name': f"Package: {pkg.package_id.name}",
+                'quantity': 1,
+                'price_unit': pkg.price,
+            }))
+
+        # Extra charges (F&B orders, damages, minibar, etc.)
+        if self.extra_charges:
+            extra_product = self.env.ref(
+                'hotel_management.product_hotel_extra', raise_if_not_found=False)
+            lines.append((0, 0, {
+                'product_id': extra_product.id if extra_product else False,
+                'name': 'Extra charges (F&B, services)',
+                'quantity': 1,
+                'price_unit': self.extra_charges,
+            }))
+
+        return lines
+
+    def action_create_invoice(self):
+        """Create a draft customer invoice for this reservation."""
+        self.ensure_one()
+
+        if self.state in ('draft', 'cancelled'):
+            raise UserError(
+                'You can only invoice confirmed, checked-in, or '
+                'checked-out reservations.'
+            )
+
+        lines = self._prepare_invoice_lines()
+        if not lines:
+            raise UserError(
+                'Nothing to invoice — the reservation has no charges.'
+            )
+
+        invoice = self.env['account.move'].create({
+            'move_type': 'out_invoice',
+            'partner_id': self.guest_id.id,
+            'invoice_date': fields.Date.context_today(self),
+            'invoice_origin': self.name,
+            'hotel_reservation_id': self.id,
+            'invoice_line_ids': lines,
+        })
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Invoice',
+            'res_model': 'account.move',
+            'res_id': invoice.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_view_invoices(self):
+        """Smart button: open the list of invoices for this reservation."""
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id(
+            'account.action_move_out_invoice_type')
+        action['domain'] = [('hotel_reservation_id', '=', self.id)]
+        action['context'] = {
+            'default_hotel_reservation_id': self.id,
+            'default_partner_id': self.guest_id.id,
+        }
+        if len(self.invoice_ids) == 1:
+            action['views'] = [(False, 'form')]
+            action['res_id'] = self.invoice_ids.id
+        return action
 
     @api.model
     def _expand_states(self, states, domain, order):
