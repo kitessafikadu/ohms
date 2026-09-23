@@ -85,8 +85,8 @@
                             <field name="guest_id_expiry"
                                    readonly="state != 'draft'"/>
                             <field name="guest_id_scan"
-                                    filename="guest_id_scan_filename"
-                                    readonly="state != 'draft'"/>
+                                   filename="guest_id_scan_filename"
+                                   readonly="state != 'draft'"/>
                         </group>
                     </group>
 
@@ -118,11 +118,11 @@
                                    readonly="state != 'draft'"/>
                             <field name="category_id" readonly="1"/>
                             <field name="check_in_date"
-                                options="{'min_date': 'today'}"
+                                   widget="hotel_date_future"
                                    readonly="state != 'draft'"/>
                             <field name="check_out_date"
                                    widget="hotel_date_after"
-                                   options="{'min_date': 'tomorrow'}"
+                                   options="{'checkin_field': 'check_in_date'}"
                                    readonly="state != 'draft'"/>
                         </group>
                         <group>
@@ -274,10 +274,49 @@
         </field>
     </record>
 
+    <record id="view_hotel_reservation_calendar" model="ir.ui.view">
+        <field name="name">hotel.reservation.calendar</field>
+        <field name="model">hotel.reservation</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Reservations"
+                date_start="check_in_date"
+                date_stop="check_out_date"
+                color="room_id"
+                event_open_popup="true"
+                quick_create="false"
+                mode="month"
+            >
+                <field name="guest_name"/>
+                <field name="room_id"/>
+                <field name="state"/>
+                <field name="category_id"/>
+                <field name="total_amount" widget="monetary"/>
+                <field name="currency_id" invisible="1"/>
+
+                <filter name="draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="confirmed" string="Confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="checked_in" string="Checked-In"
+                        domain="[('state', '=', 'checked_in')]"/>
+                <filter name="active_bookings"
+                        string="Active (Confirmed + Checked-In)"
+                        domain="[('state', 'in', ('confirmed', 'checked_in'))]"/>
+                <filter name="my_reservations" string="Created by me"
+                        domain="[('create_uid', '=', uid)]"/>
+                <separator/>
+                <filter name="this_month" string="This Month"
+                        domain="[('check_in_date', '&gt;=',
+                                 (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+            </calendar>
+        </field>
+    </record>
+
     <record id="action_hotel_reservation" model="ir.actions.act_window">
         <field name="name">Reservations</field>
         <field name="res_model">hotel.reservation</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list,calendar,form</field>
         <field name="search_view_id" ref="view_hotel_reservation_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
