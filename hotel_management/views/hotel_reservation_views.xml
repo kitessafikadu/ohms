@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- =========================================================
+         LIST
+         ========================================================= -->
     <record id="view_hotel_reservation_list" model="ir.ui.view">
         <field name="name">hotel.reservation.list</field>
         <field name="model">hotel.reservation</field>
@@ -30,6 +33,9 @@
         </field>
     </record>
 
+    <!-- =========================================================
+         FORM
+         ========================================================= -->
     <record id="view_hotel_reservation_form" model="ir.ui.view">
         <field name="name">hotel.reservation.form</field>
         <field name="model">hotel.reservation</field>
@@ -212,6 +218,9 @@
         </field>
     </record>
 
+    <!-- =========================================================
+         SEARCH  ← this drives both list and calendar filters
+         ========================================================= -->
     <record id="view_hotel_reservation_search" model="ir.ui.view">
         <field name="name">hotel.reservation.search</field>
         <field name="model">hotel.reservation</field>
@@ -239,6 +248,9 @@
 
                 <separator/>
 
+                <filter name="active_bookings"
+                        string="Active (Confirmed + Checked-In)"
+                        domain="[('state', 'in', ('confirmed', 'checked_in'))]"/>
                 <filter name="checking_in_today" string="Arriving Today"
                         domain="[('check_in_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter name="checking_out_today" string="Departing Today"
@@ -250,11 +262,13 @@
                         domain="[('payment_status', '=', 'pending')]"/>
                 <filter name="paid" string="Paid"
                         domain="[('payment_status', '=', 'paid')]"/>
+                <filter name="international" string="International (Passport)"
+                        domain="[('guest_id_type', '=', 'passport')]"/>
 
                 <separator/>
 
-                <filter name="international" string="International (Passport)"
-                        domain="[('guest_id_type', '=', 'passport')]"/>
+                <filter name="my_records" string="Created by me"
+                        domain="[('create_uid', '=', uid)]"/>
 
                 <group expand="0" string="Group By">
                     <filter name="group_state" string="State"
@@ -274,6 +288,9 @@
         </field>
     </record>
 
+    <!-- =========================================================
+         CALENDAR  ← fields only, no <filter> children
+         ========================================================= -->
     <record id="view_hotel_reservation_calendar" model="ir.ui.view">
         <field name="name">hotel.reservation.calendar</field>
         <field name="model">hotel.reservation</field>
@@ -293,26 +310,13 @@
                 <field name="category_id"/>
                 <field name="total_amount" widget="monetary"/>
                 <field name="currency_id" invisible="1"/>
-
-                <filter name="draft" string="Draft"
-                        domain="[('state', '=', 'draft')]"/>
-                <filter name="confirmed" string="Confirmed"
-                        domain="[('state', '=', 'confirmed')]"/>
-                <filter name="checked_in" string="Checked-In"
-                        domain="[('state', '=', 'checked_in')]"/>
-                <filter name="active_bookings"
-                        string="Active (Confirmed + Checked-In)"
-                        domain="[('state', 'in', ('confirmed', 'checked_in'))]"/>
-                <filter name="my_reservations" string="Created by me"
-                        domain="[('create_uid', '=', uid)]"/>
-                <separator/>
-                <filter name="this_month" string="This Month"
-                        domain="[('check_in_date', '&gt;=',
-                                 (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
             </calendar>
         </field>
     </record>
 
+    <!-- =========================================================
+         ACTIONS
+         ========================================================= -->
     <record id="action_hotel_reservation" model="ir.actions.act_window">
         <field name="name">Reservations</field>
         <field name="res_model">hotel.reservation</field>

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- =========================================================
+         LIST
+         ========================================================= -->
     <record id="view_hotel_housekeeping_task_list" model="ir.ui.view">
         <field name="name">hotel.housekeeping.task.list</field>
         <field name="model">hotel.housekeeping.task</field>
@@ -26,6 +29,9 @@
         </field>
     </record>
 
+    <!-- =========================================================
+         FORM
+         ========================================================= -->
     <record id="view_hotel_housekeeping_task_form" model="ir.ui.view">
         <field name="name">hotel.housekeeping.task.form</field>
         <field name="model">hotel.housekeeping.task</field>
@@ -75,6 +81,9 @@
         </field>
     </record>
 
+    <!-- =========================================================
+         SEARCH
+         ========================================================= -->
     <record id="view_hotel_housekeeping_task_search" model="ir.ui.view">
         <field name="name">hotel.housekeeping.task.search</field>
         <field name="model">hotel.housekeeping.task</field>
@@ -85,23 +94,37 @@
                 <field name="assigned_to"/>
 
                 <filter name="pending" string="Pending"
-                        domain="[('state','=','pending')]"/>
+                        domain="[('state', '=', 'pending')]"/>
                 <filter name="in_progress" string="In Progress"
-                        domain="[('state','=','in_progress')]"/>
+                        domain="[('state', '=', 'in_progress')]"/>
                 <filter name="done" string="Done"
-                        domain="[('state','=','done')]"/>
+                        domain="[('state', '=', 'done')]"/>
+
                 <separator/>
-                <filter name="checkout_cleaning" string="Check-out Cleaning"
-                        domain="[('task_type','=','checkout_cleaning')]"/>
-                <filter name="daily_cleaning" string="Daily Cleaning"
-                        domain="[('task_type','=','daily_cleaning')]"/>
-                <filter name="maintenance" string="Maintenance"
-                        domain="[('task_type','=','maintenance')]"/>
-                <separator/>
+
+                <filter name="open_tasks" string="Open Tasks"
+                        domain="[('state', 'in', ('pending', 'in_progress'))]"/>
                 <filter name="urgent" string="Urgent"
-                        domain="[('priority','in',('1','2'))]"/>
+                        domain="[('priority', 'in', ('1', '2'))]"/>
                 <filter name="my_tasks" string="Assigned to me"
-                        domain="[('assigned_to','=',uid)]"/>
+                        domain="[('assigned_to', '=', uid)]"/>
+
+                <separator/>
+
+                <filter name="checkout_cleaning" string="Check-out Cleaning"
+                        domain="[('task_type', '=', 'checkout_cleaning')]"/>
+                <filter name="daily_cleaning" string="Daily Cleaning"
+                        domain="[('task_type', '=', 'daily_cleaning')]"/>
+                <filter name="maintenance" string="Maintenance"
+                        domain="[('task_type', '=', 'maintenance')]"/>
+
+                <separator/>
+
+                <filter name="today" string="Today"
+                        domain="[('scheduled_date', '&gt;=',
+                                 context_today().strftime('%Y-%m-%d')),
+                                ('scheduled_date', '&lt;',
+                                 (context_today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d'))]"/>
 
                 <group expand="0" string="Group By">
                     <filter name="group_state" string="State"
@@ -119,6 +142,9 @@
         </field>
     </record>
 
+    <!-- =========================================================
+         CALENDAR
+         ========================================================= -->
     <record id="view_hotel_housekeeping_task_calendar" model="ir.ui.view">
         <field name="name">hotel.housekeeping.task.calendar</field>
         <field name="model">hotel.housekeeping.task</field>
@@ -137,33 +163,13 @@
                 <field name="priority"/>
                 <field name="assigned_to"/>
                 <field name="notes"/>
-
-                <filter name="pending" string="Pending"
-                        domain="[('state', '=', 'pending')]"/>
-                <filter name="in_progress" string="In Progress"
-                        domain="[('state', '=', 'in_progress')]"/>
-                <filter name="done" string="Done"
-                        domain="[('state', '=', 'done')]"/>
-                <filter name="open" string="Open Tasks"
-                        domain="[('state', 'in', ('pending', 'in_progress'))]"/>
-
-                <filter name="urgent" string="Urgent"
-                        domain="[('priority', 'in', ('1', '2'))]"/>
-                <filter name="my_tasks" string="Assigned to me"
-                        domain="[('assigned_to', '=', uid)]"/>
-                <separator/>
-                <filter name="today" string="Today"
-                        domain="[('scheduled_date', '&gt;=',
-                                 context_today().strftime('%Y-%m-%d')),
-                                ('scheduled_date', '&lt;',
-                                 (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d'))]"/>
-                <filter name="this_week" string="This Week"
-                        domain="[('scheduled_date', '&gt;=',
-                                 (context_today() + relativedelta(weekday=0)).strftime('%Y-%m-%d'))]"/>
             </calendar>
         </field>
     </record>
 
+    <!-- =========================================================
+         ACTION
+         ========================================================= -->
     <record id="action_hotel_housekeeping_task" model="ir.actions.act_window">
         <field name="name">Housekeeping</field>
         <field name="res_model">hotel.housekeeping.task</field>
