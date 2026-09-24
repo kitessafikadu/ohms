@@ -36,6 +36,18 @@
               action="action_room_service_order" sequence="10"
               groups="hotel_management.group_hotel_waitstaff,hotel_management.group_hotel_manager"/>
 
+    <menuitem id="menu_hotel_events_root" name="Events"
+          parent="menu_hotel_root" sequence="60"
+          groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"/>
+
+    <menuitem id="menu_hotel_events" name="Events"
+            parent="menu_hotel_events_root"
+            action="action_hotel_event" sequence="10"/>
+
+    <menuitem id="menu_hotel_events_today" name="Today's Events"
+            parent="menu_hotel_events_root"
+            action="action_hotel_event_today" sequence="20"/>
+
     <!-- ===== Manager (Configuration) ===== -->
     <menuitem id="menu_hotel_configuration" name="Configuration"
               parent="menu_hotel_root" sequence="90"
@@ -48,5 +60,9 @@
     <menuitem id="menu_hotel_service_catalogue" name="F&amp;B &amp; Packages"
               parent="menu_hotel_configuration"
               action="action_room_service_catalogue" sequence="20"/>
+
+    <menuitem id="menu_hotel_venues" name="Venues"
+            parent="menu_hotel_configuration"
+            action="action_hotel_venue" sequence="30"/>
 
 </odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="venue_ballroom" model="hotel.venue">
+            <field name="name">Grand Ballroom</field>
+            <field name="code">GB</field>
+            <field name="sequence">10</field>
+            <field name="capacity_seated">150</field>
+            <field name="capacity_standing">250</field>
+            <field name="rate_half_day">800.00</field>
+            <field name="rate_full_day">1400.00</field>
+            <field name="setup_minutes">120</field>
+            <field name="teardown_minutes">60</field>
+            <field name="has_av" eval="True"/>
+            <field name="has_stage" eval="True"/>
+            <field name="has_dance_floor" eval="True"/>
+            <field name="has_kitchen" eval="True"/>
+        </record>
+
+        <record id="venue_meeting_room" model="hotel.venue">
+            <field name="name">Meeting Room A</field>
+            <field name="code">MRA</field>
+            <field name="sequence">20</field>
+            <field name="capacity_seated">30</field>
+            <field name="capacity_standing">40</field>
+            <field name="rate_hourly">50.00</field>
+            <field name="rate_half_day">200.00</field>
+            <field name="rate_full_day">350.00</field>
+            <field name="setup_minutes">30</field>
+            <field name="teardown_minutes">30</field>
+            <field name="has_av" eval="True"/>
+        </record>
+
+        <record id="venue_boardroom" model="hotel.venue">
+            <field name="name">Executive Boardroom</field>
+            <field name="code">EB</field>
+            <field name="sequence">30</field>
+            <field name="capacity_seated">12</field>
+            <field name="rate_hourly">30.00</field>
+            <field name="setup_minutes">15</field>
+            <field name="teardown_minutes">15</field>
+            <field name="has_av" eval="True"/>
+        </record>
+
+        <record id="venue_garden" model="hotel.venue">
+            <field name="name">Garden Terrace</field>
+            <field name="code">GT</field>
+            <field name="sequence">40</field>
+            <field name="capacity_seated">80</field>
+            <field name="capacity_standing">120</field>
+            <field name="rate_half_day">600.00</field>
+            <field name="rate_full_day">1000.00</field>
+            <field name="setup_minutes">60</field>
+            <field name="teardown_minutes">45</field>
+            <field name="has_outdoor_space" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

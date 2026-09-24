@@ -187,6 +187,56 @@
                         </div>
 
                     </div>
+ 
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <div class="o_dashboard_panel">
+                                <div class="o_panel_header">
+                                    <h4>
+                                        <i class="fa fa-calendar-check-o text-primary"/>
+                                        Events
+                                        <span class="badge text-bg-primary ms-2">
+                                            <t t-esc="state.data.events_today_count"/> today
+                                        </span>
+                                        <span class="badge text-bg-secondary ms-1">
+                                            <t t-esc="state.data.events_week_count"/> this week
+                                        </span>
+                                    </h4>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="openEventsToday">
+                                        View all
+                                    </button>
+                                </div>
+                                <div class="o_panel_body p-0">
+                                    <p t-if="!state.data.events_today.length"
+                                    class="text-muted text-center py-4 mb-0">
+                                        No events today.
+                                    </p>
+                                    <table t-else="" class="table table-sm mb-0">
+                                        <tbody>
+                                            <t t-foreach="state.data.events_today"
+                                            t-as="ev" t-key="ev.id">
+                                                <tr>
+                                                    <td class="ps-3">
+                                                        <b t-esc="ev.venue"/>
+                                                    </td>
+                                                    <td t-esc="ev.customer_name"/>
+                                                    <td t-esc="ev.event_type"/>
+                                                    <td t-esc="ev.time_range"/>
+                                                    <td class="text-muted">
+                                                        <t t-esc="ev.attendees"/> guests
+                                                    </td>
+                                                    <td class="text-muted">
+                                                        <t t-esc="ev.responsible"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- ============================
                          Row 3 — Room status

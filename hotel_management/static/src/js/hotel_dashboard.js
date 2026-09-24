@@ -140,6 +140,27 @@ export class HotelDashboard extends Component {
             "Orders In Progress",
         );
     }
+
+    openEventsToday() {
+    this._openAction(
+        "hotel.event",
+        [["event_date", "=", this.state.data.today],
+         ["state", "!=", "cancelled"]],
+        "Today's Events",
+    );
+}
+
+openEventsThisWeek() {
+    this._openAction(
+        "hotel.event",
+        [["event_date", ">", this.state.data.today],
+         ["event_date", "<=",
+          new Date(new Date(this.state.data.today).getTime()
+                  + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)],
+         ["state", "!=", "cancelled"]],
+        "This Week's Events",
+    );
+}
 }
 
 registry.category("actions").add("hotel_dashboard", HotelDashboard);

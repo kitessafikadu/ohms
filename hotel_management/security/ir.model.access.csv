@@ -36,3 +36,14 @@ access_task_manager,hotel.housekeeping.task.manager,model_hotel_housekeeping_tas
 access_order_waitstaff,hotel.room.service.order.waitstaff,model_hotel_room_service_order,group_hotel_waitstaff,1,1,1,0
 access_order_manager,hotel.room.service.order.manager,model_hotel_room_service_order,group_hotel_manager,1,1,1,1
 access_order_frontdesk,hotel.room.service.order.frontdesk,model_hotel_room_service_order,group_hotel_frontdesk,1,0,0,0
+access_venue_housekeeper,hotel.venue.housekeeper,model_hotel_venue,group_hotel_housekeeper,0,0,0,0
+access_venue_frontdesk,hotel.venue.frontdesk,model_hotel_venue,group_hotel_frontdesk,1,0,0,0
+access_venue_waitstaff,hotel.venue.waitstaff,model_hotel_venue,group_hotel_waitstaff,1,0,0,0
+access_venue_manager,hotel.venue.manager,model_hotel_venue,group_hotel_manager,1,1,1,1
+access_event_housekeeper,hotel.event.housekeeper,model_hotel_event,group_hotel_housekeeper,0,0,0,0
+access_event_frontdesk,hotel.event.frontdesk,model_hotel_event,group_hotel_frontdesk,1,1,1,0
+access_event_waitstaff,hotel.event.waitstaff,model_hotel_event,group_hotel_waitstaff,1,0,0,0
+access_event_manager,hotel.event.manager,model_hotel_event,group_hotel_manager,1,1,1,1
+access_catering_frontdesk,hotel.event.catering.line.frontdesk,model_hotel_event_catering_line,group_hotel_frontdesk,1,1,1,1
+access_catering_waitstaff,hotel.event.catering.line.waitstaff,model_hotel_event_catering_line,group_hotel_waitstaff,1,0,0,0
+access_catering_manager,hotel.event.catering.line.manager,model_hotel_event_catering_line,group_hotel_manager,1,1,1,1

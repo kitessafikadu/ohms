@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =========================================================
+         LIST
+         ========================================================= -->
+    <record id="view_hotel_event_list" model="ir.ui.view">
+        <field name="name">hotel.event.list</field>
+        <field name="model">hotel.event</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'enquiry'"
+                  decoration-warning="state == 'quoted'"
+                  decoration-success="state in ('confirmed', 'in_progress')"
+                  decoration-muted="state in ('done', 'cancelled')">
+                <field name="name"/>
+                <field name="event_date"/>
+                <field name="start_time" widget="float_time"/>
+                <field name="end_time" widget="float_time"/>
+                <field name="customer_name"/>
+                <field name="venue_id"/>
+                <field name="event_type"/>
+                <field name="attendees"/>
+                <field name="total_amount" widget="monetary"/>
+                <field name="responsible_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state in ('confirmed', 'in_progress')"
+                       decoration-info="state == 'enquiry'"
+                       decoration-warning="state == 'quoted'"
+                       decoration-muted="state in ('done', 'cancelled')"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         FORM
+         ========================================================= -->
+    <record id="view_hotel_event_form" model="ir.ui.view">
+        <field name="name">hotel.event.form</field>
+        <field name="model">hotel.event</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_quote" type="object"
+                            string="Send Quote" class="oe_highlight"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state != 'enquiry'"/>
+                    <button name="action_confirm" type="object"
+                            string="Confirm" class="oe_highlight"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state not in ('enquiry', 'quoted')"/>
+                    <button name="action_start" type="object"
+                            string="Start Event"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_done" type="object"
+                            string="Complete"
+                            groups="hotel_management.group_hotel_frontdesk"
+                            invisible="state != 'in_progress'"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_reset_enquiry" type="object"
+                            string="Reset to Enquiry"
+                            groups="hotel_management.group_hotel_manager"
+                            invisible="state not in ('cancelled', 'done')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="enquiry,quoted,confirmed,in_progress,done"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                invisible="invoice_count == 0">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Invoices"/>
+                        </button>
+                        <button name="action_view_calendar_event" type="object"
+                                class="oe_stat_button"
+                                icon="fa-calendar"
+                                invisible="not calendar_event_id">
+                            <span>Calendar Entry</span>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Customer">
+                            <field name="customer_id"
+                                   options="{'no_create': True}"/>
+                            <field name="customer_name"/>
+                            <field name="customer_phone" widget="phone"/>
+                            <field name="customer_email" widget="email"/>
+                        </group>
+                        <group string="Billing">
+                            <field name="company_name"/>
+                            <field name="tax_id"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Event">
+                            <field name="event_type"/>
+                            <field name="venue_id"/>
+                            <field name="responsible_id"/>
+                            <field name="attendees"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="event_date"/>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                            <field name="start_datetime" invisible="1"/>
+                            <field name="end_datetime" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Details">
+                            <group>
+                                <field name="description" nolabel="1"
+                                       placeholder="Event description, layout, decor…"/>
+                            </group>
+                            <group>
+                                <field name="special_requirements"
+                                       nolabel="1"
+                                       placeholder="Dietary, AV, accessibility…"/>
+                            </group>
+                        </page>
+
+                        <page string="Catering">
+                            <field name="catering_line_ids">
+                                <list editable="bottom">
+                                    <field name="service_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="description"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="subtotal" readonly="1"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="catering_total"
+                                       class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+
+                        <page string="Linked Rooms">
+                            <field name="reservation_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="guest_name"/>
+                                    <field name="room_id"/>
+                                    <field name="check_in_date"/>
+                                    <field name="check_out_date"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Billing">
+                            <group>
+                                <group string="Amounts">
+                                    <field name="rate"/>
+                                    <field name="catering_total" readonly="1"/>
+                                    <field name="extras_total"/>
+                                    <field name="currency_id"
+                                           groups="base.group_multi_currency"/>
+                                </group>
+                                <group string="Invoicing"
+                                       groups="hotel_management.group_hotel_frontdesk">
+                                    <field name="total_amount" readonly="1"
+                                           class="oe_subtotal_footer_separator"/>
+                                    <field name="deposit_amount"/>
+                                    <field name="deposit_invoice_id"
+                                           readonly="1"
+                                           invisible="not deposit_invoice_id"/>
+                                    <field name="final_invoice_id"
+                                           readonly="1"
+                                           invisible="not final_invoice_id"/>
+                                </group>
+                            </group>
+                            <group groups="hotel_management.group_hotel_frontdesk">
+                                <button name="action_create_deposit_invoice"
+                                        type="object"
+                                        string="Create Deposit Invoice"
+                                        class="btn-secondary"
+                                        invisible="deposit_invoice_id or deposit_amount == 0"/>
+                                <button name="action_create_final_invoice"
+                                        type="object"
+                                        string="Create Final Invoice"
+                                        class="btn-primary"
+                                        invisible="final_invoice_id or state in ('enquiry', 'quoted', 'cancelled')"/>
+                            </group>
+                        </page>
+
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         SEARCH
+         ========================================================= -->
+    <record id="view_hotel_event_search" model="ir.ui.view">
+        <field name="name">hotel.event.search</field>
+        <field name="model">hotel.event</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="customer_name"/>
+                <field name="venue_id"/>
+                <field name="event_date"/>
+                <field name="responsible_id"/>
+
+                <filter name="enquiry" string="Enquiry"
+                        domain="[('state', '=', 'enquiry')]"/>
+                <filter name="quoted" string="Quoted"
+                        domain="[('state', '=', 'quoted')]"/>
+                <filter name="confirmed" string="Confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="in_progress" string="In Progress"
+                        domain="[('state', '=', 'in_progress')]"/>
+                <filter name="done" string="Completed"
+                        domain="[('state', '=', 'done')]"/>
+                <filter name="cancelled" string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+
+                <separator/>
+
+                <filter name="active" string="Active Pipeline"
+                        domain="[('state', 'in', ('enquiry', 'quoted', 'confirmed', 'in_progress'))]"/>
+                <filter name="today" string="Today"
+                        domain="[('event_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="this_week" string="This Week"
+                        domain="[('event_date', '&gt;=',
+                                 (context_today() + datetime.timedelta(days=0)).strftime('%Y-%m-%d')),
+                                ('event_date', '&lt;=',
+                                 (context_today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter name="this_month" string="This Month"
+                        domain="[('event_date', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
+                <separator/>
+                <filter name="my_events" string="I Coordinate"
+                        domain="[('responsible_id', '=', uid)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_venue" string="Venue"
+                            context="{'group_by': 'venue_id'}"/>
+                    <filter name="group_event_type" string="Event Type"
+                            context="{'group_by': 'event_type'}"/>
+                    <filter name="group_responsible" string="Coordinator"
+                            context="{'group_by': 'responsible_id'}"/>
+                    <filter name="group_month" string="Month"
+                            context="{'group_by': 'event_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         CALENDAR
+         ========================================================= -->
+    <record id="view_hotel_event_calendar" model="ir.ui.view">
+        <field name="name">hotel.event.calendar</field>
+        <field name="model">hotel.event</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Events"
+                date_start="start_datetime"
+                date_stop="end_datetime"
+                color="venue_id"
+                event_open_popup="true"
+                quick_create="false"
+                mode="month"
+            >
+                <field name="customer_name"/>
+                <field name="venue_id"/>
+                <field name="event_type"/>
+                <field name="attendees"/>
+                <field name="state"/>
+                <field name="responsible_id"/>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         ACTIONS
+         ========================================================= -->
+    <record id="action_hotel_event" model="ir.actions.act_window">
+        <field name="name">Events</field>
+        <field name="res_model">hotel.event</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="search_view_id" ref="view_hotel_event_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first event
+            </p>
+            <p>
+                Book a venue for weddings, conferences, and meetings.
+                The event appears on the Calendar app automatically
+                when confirmed.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_hotel_event_today" model="ir.actions.act_window">
+        <field name="name">Today's Events</field>
+        <field name="res_model">hotel.event</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">
+            [('event_date', '=', context_today().strftime('%Y-%m-%d'))]
+        </field>
+        <field name="context">
+            {'search_default_today': 1}
+        </field>
+    </record>
+
+</odoo>
