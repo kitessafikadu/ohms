@@ -1,0 +1,347 @@
+// Template Theme: Reset Password Page Styles
+// This file contains styles for the custom reset password and signup pages.
+
+.oe_website_login_container {
+    background-color: #f0f4f8;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        max-width: 1000px;
+        width: 100%;
+        min-height: 600px;
+        flex-direction: row;
+        background: var(--my-theme-login-right-panel-bg, #ffffff);
+    }
+
+    .card.no-info-panel {
+        max-width: 620px;
+        min-height: 520px;
+    }
+
+    .card.no-info-panel .login-form-panel {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+
+    // Left side info panel
+    .login-info-panel {
+        background: var(--my-theme-login-left-panel-bg, #e0f2fe);
+        background-image: linear-gradient(rgba(224, 242, 254, 0.25), rgba(224, 242, 254, 0.25)), var(--my-theme-login-left-panel-bg-image, none);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        width: 45%;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: relative;
+
+        .info-dots {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #bae6fd;
+            border-radius: 50%;
+            
+            &.dot-top { top: 40px; left: 40px; }
+            &.dot-bottom { bottom: 40px; right: 40px; }
+        }
+
+        .login-logo-wrapper {
+            width: 180px;
+            height: 180px;
+            background: transparent;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            
+            &::after {
+                content: "";
+                position: absolute;
+                bottom: -5px;
+                right: -5px;
+                width: 100%;
+                height: 100%;
+                background: inherit;
+                border-radius: inherit;
+                filter: blur(8px);
+                opacity: 0.3;
+                z-index: -1;
+            }
+
+            img {
+                width: auto;
+                max-width: 140px;
+                max-height: 140px;
+                object-fit: contain;
+            }
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--my-theme-login-company-text, #1e3a8a);
+            margin-bottom: 12px;
+            font-family: inherit;
+        }
+
+        p {
+            font-size: 14px;
+            color: var(--my-theme-login-motto-text, #64748b);
+            line-height: 1.6;
+            max-width: 280px;
+        }
+    }
+
+    // Right side form panel
+    .login-form-panel {
+        flex: 1;
+        padding: 60px;
+        display: flex;
+        flex-direction: column;
+        background: var(--my-theme-login-right-panel-bg, #ffffff);
+
+        .welcome-text {
+            margin-bottom: 40px;
+            
+            h1 {
+                font-size: 32px;
+                font-weight: 800;
+                color: #0f172a;
+                margin-bottom: 8px;
+            }
+            
+            p {
+                color: #94a3b8;
+                font-size: 15px;
+            }
+        }
+
+        .form-group, .mb-3 {
+            margin-bottom: 24px;
+            position: relative;
+
+            label {
+                font-size: 14px;
+                font-weight: 700;
+                color: #0f172a;
+                margin-bottom: 12px;
+                display: block;
+            }
+
+            input.form-control {
+                background: #f8fafc;
+                border: 1px solid #f1f5f9 !important;
+                border-radius: 8px !important;
+                padding: 12px 20px !important;
+                font-size: 15px;
+                font-weight: 500;
+                min-height: 48px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                color: #1e293b;
+
+                &:focus {
+                    background: #ffffff;
+                    border-color: #38bdf8 !important;
+                    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+                    outline: none;
+                }
+            }
+
+            .field-label-wrapper {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+
+                label {
+                    margin: 0;
+                }
+
+                .field-link {
+                    font-size: 13px;
+                    color: #38bdf8;
+                    text-decoration: none;
+                    font-weight: 600;
+                    
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+            }
+
+            .input-group {
+                background: #f8fafc;
+                border: 1px solid #f1f5f9;
+                border-radius: 8px;
+                padding: 6px 16px;
+                display: flex;
+                align-items: center;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                min-height: 48px;
+                
+                &:focus-within {
+                    background: #ffffff;
+                    border-color: #38bdf8;
+                    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+                }
+
+                .input-group-text {
+                    background: transparent;
+                    border: none;
+                    color: #94a3b8;
+                    padding: 0;
+                    margin-right: 16px;
+                    font-size: 18px;
+                }
+
+                input.form-control {
+                    background: transparent !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    padding: 0 !important;
+                    height: auto;
+                    min-height: unset;
+                    font-size: 15px;
+                    font-weight: 500;
+                    
+                    &::placeholder {
+                        color: #cbd5e1;
+                    }
+
+                    &:-webkit-autofill,
+                    &:-webkit-autofill:hover, 
+                    &:-webkit-autofill:focus {
+                        -webkit-text-fill-color: #1e293b;
+                        transition: background-color 5000s ease-in-out 0s;
+                    }
+                }
+            }
+        }
+
+        .login-btn {
+            background: #0190fe;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+
+            &:hover {
+                transform: translateY(-2px);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+        }
+
+        .oe_login_buttons .btn:not(.login-btn),
+        .oe_login_buttons a.btn:not(.login-btn),
+        a.field-link[role='button'],
+        .field-link {
+            color: var(--my-theme-login-other-button-text, #1e293b);
+        }
+
+        .oe_login_buttons .btn:not(.login-btn),
+        .oe_login_buttons a.btn:not(.login-btn),
+        a.field-link[role='button'] {
+            background: var(--my-theme-login-other-button, #e2e8f0);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .login-footer {
+            margin-top: auto;
+            text-align: center;
+            padding-top: 32px;
+            
+            .contact-admin {
+                font-size: 14px;
+                color: #64748b;
+                
+                a {
+                    color: #0f172a;
+                    font-weight: 700;
+                    text-decoration: none;
+                    margin-left: 4px;
+                }
+            }
+            
+            .bottom-links {
+                margin-top: 40px;
+                display: flex;
+                justify-content: space-between;
+                border-top: 1px solid #f1f5f9;
+                padding-top: 16px;
+                
+                a, span {
+                    font-size: 11px;
+                    color: #94a3b8;
+                    text-decoration: none;
+                }
+                
+                .powered-by strong {
+                    color: #1e293b;
+                    font-weight: 800;
+                }
+            }
+        }
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 991.98px) {
+    .oe_website_login_container .card {
+        flex-direction: column;
+        min-height: auto;
+        max-width: 500px;
+    }
+    .oe_website_login_container .login-info-panel {
+        display: none;
+    }
+    .oe_website_login_container .login-form-panel {
+        padding: 40px 24px;
+
+        .welcome-text {
+            text-align: center;
+        }
+    }
+}
+
+@media (max-width: 500px) {
+    .oe_website_login_container {
+        padding: 10px;
+
+        .login-form-panel {
+            padding: 30px 16px;
+        }
+
+        .card {
+            border-radius: 8px;
+        }
+    }
+}
