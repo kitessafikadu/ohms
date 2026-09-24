@@ -292,6 +292,7 @@
                 <field name="attendees"/>
                 <field name="state"/>
                 <field name="responsible_id"/>
+            </calendar>
         </field>
     </record>
 
