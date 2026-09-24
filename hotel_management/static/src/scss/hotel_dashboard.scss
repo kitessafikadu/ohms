@@ -1,0 +1,127 @@
+.o_hotel_dashboard {
+    padding: 16px 8px;
+    background: #f4f6f9;
+    min-height: calc(100vh - 60px);
+
+    .o_dashboard_card {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        height: 100%;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .o_card_icon {
+            font-size: 2rem;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-right: 16px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .o_card_body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .o_card_value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: #212529;
+        }
+
+        .o_card_label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #495057;
+            margin-top: 4px;
+        }
+
+        .o_card_sub {
+            font-size: 0.78rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+    }
+
+    .o_card_occupancy .o_card_icon { background: #875a7b; }
+    .o_card_arrivals  .o_card_icon { background: #28a745; }
+    .o_card_departures .o_card_icon { background: #17a2b8; }
+    .o_card_inhouse   .o_card_icon { background: #fd7e14; }
+
+    .o_dashboard_panel {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        height: 100%;
+
+        .o_panel_header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9ecef;
+            background: #fafbfc;
+
+            h4 {
+                margin: 0;
+                font-size: 0.98rem;
+                font-weight: 600;
+                color: #212529;
+                display: flex;
+                align-items: center;
+            }
+        }
+
+        .o_panel_body {
+            padding: 16px;
+        }
+    }
+
+    .o_room_stat {
+        padding: 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.15s;
+
+        &:hover {
+            background: #f8f9fa;
+        }
+
+        .o_room_count {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .o_room_label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 6px;
+        }
+    }
+
+    .o_big_number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #875a7b;
+        line-height: 1;
+    }
+}

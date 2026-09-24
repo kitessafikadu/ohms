@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="hotel_management.HotelDashboard">
+        <div class="o_hotel_dashboard">
+
+            <div t-if="state.loading" class="text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-3x text-primary"/>
+                <p class="mt-3">Loading dashboard…</p>
+            </div>
+
+            <div t-elif="state.error" class="alert alert-danger m-4">
+                <b>Could not load dashboard:</b>
+                <t t-esc="state.error"/>
+            </div>
+
+            <t t-elif="state.data">
+                <div class="container-fluid">
+
+                    <!-- ============================
+                         Row 1 — KPI cards
+                         ============================ -->
+                    <div class="row g-3 mb-3">
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="o_dashboard_card o_card_occupancy"
+                                 t-on-click="openInHouse" role="button">
+                                <div class="o_card_icon">
+                                    <i class="fa fa-building-o"/>
+                                </div>
+                                <div class="o_card_body">
+                                    <div class="o_card_value">
+                                        <t t-esc="state.data.occupancy"/>%
+                                    </div>
+                                    <div class="o_card_label">Occupancy</div>
+                                    <div class="o_card_sub">
+                                        <t t-esc="state.data.occupied_rooms"/>
+                                        of <t t-esc="state.data.total_rooms"/>
+                                        rooms
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="o_dashboard_card o_card_arrivals"
+                                 t-on-click="openArrivals" role="button">
+                                <div class="o_card_icon">
+                                    <i class="fa fa-sign-in"/>
+                                </div>
+                                <div class="o_card_body">
+                                    <div class="o_card_value">
+                                        <t t-esc="state.data.arrivals_count"/>
+                                    </div>
+                                    <div class="o_card_label">Arrivals Today</div>
+                                    <div class="o_card_sub">Click to view list</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="o_dashboard_card o_card_departures"
+                                 t-on-click="openDepartures" role="button">
+                                <div class="o_card_icon">
+                                    <i class="fa fa-sign-out"/>
+                                </div>
+                                <div class="o_card_body">
+                                    <div class="o_card_value">
+                                        <t t-esc="state.data.departures_count"/>
+                                    </div>
+                                    <div class="o_card_label">Departures Today</div>
+                                    <div class="o_card_sub">Click to view list</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="o_dashboard_card o_card_inhouse"
+                                 t-on-click="openInHouse" role="button">
+                                <div class="o_card_icon">
+                                    <i class="fa fa-users"/>
+                                </div>
+                                <div class="o_card_body">
+                                    <div class="o_card_value">
+                                        <t t-esc="state.data.in_house_count"/>
+                                    </div>
+                                    <div class="o_card_label">In-House Guests</div>
+                                    <div class="o_card_sub">Click to view list</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ============================
+                         Row 2 — Operations panels
+                         ============================ -->
+                    <div class="row g-3 mb-3">
+
+                        <div class="col-lg-6">
+                            <div class="o_dashboard_panel">
+                                <div class="o_panel_header">
+                                    <h4>
+                                        <i class="fa fa-bell text-danger"/>
+                                        Urgent Housekeeping
+                                        <span class="badge text-bg-danger ms-2"
+                                              t-esc="state.data.urgent_tasks_count"/>
+                                    </h4>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="openUrgentTasks">
+                                        View all
+                                    </button>
+                                </div>
+                                <div class="o_panel_body p-0">
+                                    <p t-if="!state.data.urgent_tasks.length"
+                                       class="text-muted text-center py-4 mb-0">
+                                        No urgent tasks. All clear.
+                                    </p>
+                                    <table t-else="" class="table table-sm mb-0">
+                                        <tbody>
+                                            <t t-foreach="state.data.urgent_tasks"
+                                               t-as="task" t-key="task.id">
+                                                <tr>
+                                                    <td class="ps-3">
+                                                        <span t-attf-class="badge #{task.priority == '2' ? 'text-bg-danger' : 'text-bg-warning'}">
+                                                            <t t-if="task.priority == '2'">Urgent</t>
+                                                            <t t-else="">High</t>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <b t-esc="task.room"/>
+                                                    </td>
+                                                    <td t-esc="task.task_type"/>
+                                                    <td class="text-muted">
+                                                        <t t-if="task.assigned_to">
+                                                            <t t-esc="task.assigned_to"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <em>Unassigned</em>
+                                                        </t>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="o_dashboard_panel">
+                                <div class="o_panel_header">
+                                    <h4>
+                                        <i class="fa fa-file-text-o text-warning"/>
+                                        To Invoice
+                                        <span class="badge text-bg-warning ms-2"
+                                              t-esc="state.data.to_invoice_count"/>
+                                    </h4>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="openToInvoice">
+                                        View all
+                                    </button>
+                                </div>
+                                <div class="o_panel_body p-0">
+                                    <p t-if="!state.data.to_invoice.length"
+                                       class="text-muted text-center py-4 mb-0">
+                                        Nothing to invoice.
+                                    </p>
+                                    <table t-else="" class="table table-sm mb-0">
+                                        <tbody>
+                                            <t t-foreach="state.data.to_invoice"
+                                               t-as="res" t-key="res.id">
+                                                <tr>
+                                                    <td class="ps-3">
+                                                        <b t-esc="res.name"/>
+                                                    </td>
+                                                    <td t-esc="res.guest_name"/>
+                                                    <td class="text-end pe-3">
+                                                        <t t-esc="res.total_amount.toFixed(2)"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ============================
+                         Row 3 — Room status
+                         ============================ -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <div class="o_dashboard_panel">
+                                <div class="o_panel_header">
+                                    <h4>
+                                        <i class="fa fa-bed"/>
+                                        Room Status
+                                    </h4>
+                                </div>
+                                <div class="o_panel_body">
+                                    <div class="row text-center">
+                                        <div class="col-md-3 o_room_stat"
+                                             t-on-click="openCleanRooms" role="button">
+                                            <div class="o_room_count text-success">
+                                                <t t-esc="state.data.rooms.clean"/>
+                                            </div>
+                                            <div class="o_room_label">Clean</div>
+                                        </div>
+                                        <div class="col-md-3 o_room_stat"
+                                             t-on-click="openDirtyRooms" role="button">
+                                            <div class="o_room_count text-danger">
+                                                <t t-esc="state.data.rooms.dirty"/>
+                                            </div>
+                                            <div class="o_room_label">Dirty</div>
+                                        </div>
+                                        <div class="col-md-3 o_room_stat"
+                                             t-on-click="openCleaningRooms" role="button">
+                                            <div class="o_room_count text-info">
+                                                <t t-esc="state.data.rooms.cleaning"/>
+                                            </div>
+                                            <div class="o_room_label">Cleaning</div>
+                                        </div>
+                                        <div class="col-md-3 o_room_stat"
+                                             t-on-click="openMaintenanceRooms" role="button">
+                                            <div class="o_room_count text-warning">
+                                                <t t-esc="state.data.rooms.maintenance"/>
+                                            </div>
+                                            <div class="o_room_label">Maintenance</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================
+                         Row 4 — F&B orders + refresh
+                         ============================ -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <div class="o_dashboard_panel">
+                                <div class="o_panel_header">
+                                    <h4>
+                                        <i class="fa fa-cutlery text-primary"/>
+                                        F&amp;B Orders in Progress
+                                    </h4>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="openOrdersInProgress">
+                                        View all
+                                    </button>
+                                </div>
+                                <div class="o_panel_body text-center">
+                                    <div class="o_big_number">
+                                        <t t-esc="state.data.orders_in_progress"/>
+                                    </div>
+                                    <div class="text-muted">
+                                        order(s) being prepared
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <button class="btn btn-primary" t-on-click="loadData">
+                            <i class="fa fa-refresh"/> Refresh
+                        </button>
+                    </div>
+
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>
