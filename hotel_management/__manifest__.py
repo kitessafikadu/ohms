@@ -1,6 +1,6 @@
 {
     'name': 'Hotel Management',
-    'version': '18.0.1.3.0',
+    'version': '18.0.1.4.0',
     'category': 'Services',
     'summary': 'Reservations, rooms, housekeeping, F&B, guest portal',
     'depends': ['base', 'mail', 'website', 'portal', 'account'],
@@ -16,12 +16,16 @@
         'views/hotel_reservation_views.xml',
         'views/hotel_housekeeping_views.xml',
         'views/hotel_room_service_views.xml',
+        'views/hotel_dashboard_views.xml',
         'views/hotel_menus.xml',
         'views/website_templates.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'hotel_management/static/src/js/hotel_date_widgets.js',
+            'hotel_management/static/src/js/hotel_dashboard.js',           
+            'hotel_management/static/src/xml/hotel_dashboard.xml',         
+            'hotel_management/static/src/scss/hotel_dashboard.scss', 
         ],
     },
     'application': True,

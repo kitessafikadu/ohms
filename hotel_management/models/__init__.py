@@ -9,3 +9,4 @@ from . import hotel_reservation_guest
 from . import hotel_reservation_feedback
 from . import hotel_reservation_package
 from . import hotel_housekeeping
+from . import hotel_dashboard
