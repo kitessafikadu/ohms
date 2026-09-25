@@ -1,6 +1,6 @@
 {
     'name': 'Hotel Management',
-    'version': '18.0.1.5.0',
+    'version': '18.0.1.5.6',
     'category': 'Services',
     'summary': 'Reservations, rooms, housekeeping, F&B, events, guest portal',
     'depends': ['base', 'mail', 'website', 'portal', 'account', 'calendar'],
@@ -12,7 +12,8 @@
         'data/ir_cron_data.xml',
         'data/hotel_room_categories.xml',
         'data/hotel_products.xml',
-        'data/hotel_venue_data.xml',              
+        'data/hotel_venue_data.xml',  
+        'data/company_logo.xml',              
         'views/hotel_room_views.xml',
         'views/hotel_reservation_views.xml',
         'views/hotel_housekeeping_views.xml',

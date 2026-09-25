@@ -10,7 +10,7 @@
 		t-inherit-mode="extension" 
 	>
         <!-- Dynamically set the modal size based on component state -->
-	    <xpath expr="//div[@t-attf-class='modal-{{props.size}}']" position="attributes">
+	    <xpath expr="//div[hasclass('modal-dialog')]" position="attributes">
 	    	<attribute name="t-attf-class">modal-{{ this.data?.size || 'lg' }}</attribute>
 	    </xpath>
 	</t>

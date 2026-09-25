@@ -12,7 +12,7 @@
                 <t t-set="show_login_info_panel_param_normalized" t-value="(show_login_info_panel_param or '').strip().lower()"/>
                 <t t-set="show_login_info_panel" t-value="show_login_info_panel_param_normalized in ['true', '1', 'yes', 'on']"/>
                 <t t-set="login_left_panel_bg_image_url" t-value="('/web/image?model=res.company&amp;field=login_left_panel_bg_image&amp;id=%s' % request.env.company.id) if request.env.company.login_left_panel_bg_image else ''"/>
-                <t t-set="white_label_product_name" t-value="request.env['ir.config_parameter'].sudo().get_param('white_label.product_name', 'System') or 'System'"/>
+                <t t-set="white_label_product_name" t-value="request.env['ir.config_parameter'].sudo().get_param('white_label.product_name', 'Ohms') or 'Ohms'"/>
                 <t t-set="white_label_show_powered_by_param" t-value="request.env['ir.config_parameter'].sudo().get_param('white_label.show_powered_by', 'False')"/>
                 <t t-set="white_label_show_powered_by" t-value="(white_label_show_powered_by_param or '').strip().lower() in ['true', '1', 'yes', 'on']"/>
                 <t t-set="white_label_powered_by_text" t-value="request.env['ir.config_parameter'].sudo().get_param('white_label.powered_by_text', '')"/>
@@ -33,7 +33,7 @@
                                      t-attf-src="/web/image?model=res.company&amp;field=login_page_logo&amp;id={{ request.env.company.id }}"
                                      alt="Company logo"/>
                                 <img t-else="" src="/pine_backend_theme/static/src/img/logo.png" alt="Logo"/>
-                                <h1 t-esc="white_label_product_name"/>
+                                <h1 t-esc="request.env.company.name"/>
                             </div>
 
                             <form class="oe_login_form" role="form" t-attf-action="/web/login" method="post" onsubmit="this.querySelector('.btn-primary').disabled = true">

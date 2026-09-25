@@ -55,7 +55,7 @@
         </xpath>
 
         <!-- Conditionally show the attachment preview button -->
-        <xpath expr="//button[@t-if='props.hasAttachmentPreview and state.thread.attachmentsInWebClientView.length']" position="attributes">
+        <xpath expr="//button[@t-on-click='popoutAttachment']" position="attributes">
             <attribute name="t-if">props.isChatterAside and props.hasAttachmentPreview and state.thread.attachmentsInWebClientView.length</attribute>
         </xpath>
 
