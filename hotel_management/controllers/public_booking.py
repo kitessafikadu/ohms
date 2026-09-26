@@ -10,7 +10,6 @@ from odoo.http import request
 
 NAME_RE = re.compile(r"^[A-Za-z][A-Za-z'\-]*(?:\s+[A-Za-z][A-Za-z'\-]*)+$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
-ID_RE = re.compile(r"^[A-Za-z0-9\- ]{4,32}$")
 PHONE_RE = re.compile(r"^(?:\+?\d{1,4}[\s\-]?)?\d{6,12}$")
 
 MAX_ID_SCAN_BYTES = 5 * 1024 * 1024
@@ -106,32 +105,6 @@ def _validate_booking(post):
                     "Phone must be 10 digits (e.g. 0912345678) "
                     "or 13 digits with country code (e.g. 251912345678)."
                 )
-
-    id_number = _clean(post.get("guest_id_number"))
-    if not id_number:
-        errors.append("ID number is required.")
-    elif not ID_RE.match(id_number):
-        errors.append(
-            "ID number must be 4 to 32 characters "
-            "(letters, digits, hyphens or spaces)."
-        )
-
-    dob_str = _clean(post.get("guest_dob"))
-    if not dob_str:
-        errors.append("Date of birth is required.")
-    else:
-        try:
-            dob = date.fromisoformat(dob_str)
-            today = date.today()
-            age = today.year - dob.year - (
-                (today.month, today.day) < (dob.month, dob.day)
-            )
-            if age < 18:
-                errors.append("Primary guest must be at least 18 years old.")
-            if dob > today:
-                errors.append("Date of birth cannot be in the future.")
-        except ValueError:
-            errors.append("Invalid date of birth format.")
 
     check_in = _clean(post.get("check_in_date"))
     check_out = _clean(post.get("check_out_date"))
@@ -248,13 +221,10 @@ class HotelPublicBooking(http.Controller):
                 'guest_id': partner.id,
                 'guest_name': _clean(post.get('guest_name')),
                 'guest_id_type': post.get('guest_id_type') or 'national_id',
-                'guest_id_number': _clean(post.get('guest_id_number')),
-                'guest_id_expiry': post.get('guest_id_expiry') or False,
                 'guest_id_scan_front': front_b64,
                 'guest_id_scan_front_filename': front_name,
                 'guest_id_scan_back': back_b64,
                 'guest_id_scan_back_filename': back_name,
-                'guest_dob': post.get('guest_dob') or False,
                 'guest_email': guest_email,
                 'guest_phone': guest_phone,
                 'emergency_contact_name': post.get('emergency_contact_name'),

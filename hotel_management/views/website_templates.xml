@@ -6,6 +6,11 @@
             <div class="container py-5">
                 <h1>Book your stay</h1>
 
+                <div class="alert alert-info" role="alert">
+                    You only need to upload a photo of your ID for confirmation. Our front
+                    desk will also read the details from the image at check-in.
+                </div>
+
                 <t t-if="field_errors.get('__general__')">
                     <div class="alert alert-danger"
                          t-esc="field_errors['__general__']"/>
@@ -85,7 +90,7 @@
                     <h4 class="mt-4">Guest Information</h4>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-8 mb-3">
                             <label>Full name (as on ID)</label>
                             <input type="text" name="guest_name"
                                    id="guest_name"
@@ -97,46 +102,22 @@
                             <div class="text-danger small mt-1 d-none"
                                  id="error_guest_name"/>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <label>Vehicle plate (optional)</label>
+                            <input type="text" name="vehicle_plate"
+                                   id="vehicle_plate"
+                                   class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
                             <label>ID type</label>
                             <select name="guest_id_type" class="form-select">
                                 <option value="passport">Passport</option>
                                 <option value="national_id">National ID</option>
                                 <option value="driver_license">Driver's License</option>
                             </select>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label>ID number</label>
-                            <input type="text" name="guest_id_number"
-                                   id="guest_id_number"
-                                   class="form-control" required="required"
-                                   title="4 to 32 characters, letters/digits/hyphens."/>
-                            <div class="text-danger small mt-1 d-none"
-                                 id="error_guest_id_number"/>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label>ID expiry</label>
-                            <input type="date" name="guest_id_expiry"
-                                   id="guest_id_expiry"
-                                   class="form-control"/>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label>Date of birth</label>
-                            <input type="date" name="guest_dob"
-                                   id="guest_dob"
-                                   class="form-control" required="required"/>
-                            <small class="text-muted">Must be 18 or older.</small>
-                            <div class="text-danger small mt-1 d-none"
-                                 id="error_guest_dob"/>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label>Vehicle plate (optional)</label>
-                            <input type="text" name="vehicle_plate"
-                                   id="vehicle_plate"
-                                   class="form-control"/>
                         </div>
                     </div>
 
@@ -232,7 +213,6 @@
 
                     var NAME_RE = /^[A-Za-z][A-Za-z'\-]*(?:\s+[A-Za-z][A-Za-z'\-]*)+$/;
                     var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/;
-                    var ID_RE = /^[A-Za-z0-9\- ]{4,32}$/;
                     var PHONE_RE = /^(?:\+?\d{1,4}[\s\-]?)?\d{6,12}$/;
 
                     function setFieldError(fieldId, message) {
@@ -259,7 +239,7 @@
 
                     function clearAllFieldErrors() {
                         var ids = [
-                            'guest_name', 'guest_id_number', 'guest_dob',
+                            'guest_name',
                             'email', 'phone', 'emergency_contact_phone',
                             'check_in_date', 'check_out_date',
                             'adults', 'children', 'room',
@@ -383,32 +363,6 @@
                             if (emErr) errors['emergency_contact_phone'] = emErr;
                         }
 
-                        var idNum = get('guest_id_number');
-                        if (!idNum) {
-                            errors['guest_id_number'] = 'ID number is required.';
-                        } else if (!ID_RE.test(idNum)) {
-                            errors['guest_id_number'] =
-                                '4\u201332 characters, letters, digits or hyphens.';
-                        }
-
-                        var dobStr = get('guest_dob');
-                        if (!dobStr) {
-                            errors['guest_dob'] = 'Date of birth is required.';
-                        } else {
-                            var dob = new Date(dobStr);
-                            var today = new Date();
-                            var age = today.getFullYear() - dob.getFullYear();
-                            var m = today.getMonth() - dob.getMonth();
-                            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-                                age--;
-                            }
-                            if (age < 18) {
-                                errors['guest_dob'] = 'You must be at least 18 years old.';
-                            } else if (dob > today) {
-                                errors['guest_dob'] = 'Date of birth cannot be in the future.';
-                            }
-                        }
-
                         var ci = get('check_in_date');
                         var co = get('check_out_date');
                         var todayStr = new Date().toISOString().slice(0, 10);
@@ -459,7 +413,7 @@
                         if (!form) return;
 
                         var watched = [
-                            'guest_name', 'guest_id_number', 'guest_dob',
+                            'guest_name',
                             'email', 'phone', 'emergency_contact_phone',
                             'check_in_date', 'check_out_date',
                             'adults', 'children', 'room',
@@ -514,11 +468,82 @@
 
     <template id="public_booking_thanks" name="Public Booking Thanks">
         <t t-call="website.layout">
-            <div class="container py-5 text-center">
-                <h1>Thank you!</h1>
-                <p>Your booking request has been received.
-                   Our front desk will confirm shortly.</p>
-                <a href="/" class="btn btn-primary">Back to home</a>
+            <div class="container py-5">
+
+                <div class="text-center mb-5">
+                    <h1>Thank you!</h1>
+                    <p class="lead">Your booking request has been received.</p>
+                    <p>Our front desk will review and confirm shortly.</p>
+                </div>
+
+                <t t-if="reservation">
+                    <div class="card mx-auto shadow-sm" style="max-width: 640px;">
+                        <div class="card-header bg-success text-white">
+                            Reservation reference:
+                            <b t-esc="reservation.name"/>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Guest</dt>
+                                <dd class="col-sm-8" t-esc="reservation.guest_name"/>
+
+                                <dt class="col-sm-4">Room</dt>
+                                <dd class="col-sm-8" t-esc="reservation.room_id.name"/>
+
+                                <dt class="col-sm-4">Check-in</dt>
+                                <dd class="col-sm-8" t-esc="reservation.check_in_date"/>
+
+                                <dt class="col-sm-4">Check-out</dt>
+                                <dd class="col-sm-8" t-esc="reservation.check_out_date"/>
+
+                                <dt class="col-sm-4">Nights</dt>
+                                <dd class="col-sm-8" t-esc="reservation.total_nights"/>
+
+                                <dt class="col-sm-4">Adults / Children</dt>
+                                <dd class="col-sm-8">
+                                    <t t-esc="reservation.adults"/> /
+                                    <t t-esc="reservation.children"/>
+                                </dd>
+
+                                <dt class="col-sm-4">Status</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge text-bg-secondary"
+                                        t-esc="reservation.state"/>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </t>
+
+                <div class="text-center mt-4">
+                    <a href="/my/reservations" class="btn btn-primary btn-lg">
+                        View my reservations
+                    </a>
+                    <a href="/" class="btn btn-outline-secondary btn-lg">
+                        Back to home
+                    </a>
+                </div>
+
+                <div class="text-center mt-4 text-muted"
+                    t-if="partner and partner.email">
+                    <p>
+                        A confirmation will be sent to
+                        <b t-esc="partner.email"/>.
+                    </p>
+                    <p>
+                        To view your bookings online, click
+                        <b>View my reservations</b> and log in with that email.
+                        If you don't have an account yet, contact the front desk
+                        to set up portal access.
+                    </p>
+                </div>
+
+                <p class="text-center text-muted mt-3"
+                t-if="not partner or not partner.email">
+                    Save this page or write down your reservation reference.
+                    You'll need it at check-in.
+                </p>
+
             </div>
         </t>
     </template>

@@ -41,23 +41,23 @@
                 <header>
                     <button name="action_confirm" type="object"
                             string="Confirm" class="oe_highlight"
-                            groups="hotel_management.group_hotel_frontdesk"
+                            groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"
                             invisible="state != 'draft'"/>
                     <button name="action_check_in" type="object"
                             string="Check-In" class="oe_highlight"
-                            groups="hotel_management.group_hotel_frontdesk"
+                            groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"
                             invisible="state != 'confirmed'"/>
                     <button name="action_check_out" type="object"
                             string="Check-Out" class="oe_highlight"
-                            groups="hotel_management.group_hotel_frontdesk"
+                            groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"
                             invisible="state != 'checked_in'"/>
                     <button name="action_create_invoice" type="object"
                             string="Create Invoice"
-                            groups="hotel_management.group_hotel_frontdesk"
+                            groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"
                             invisible="state != 'checked_out' or invoice_status == 'invoiced'"/>
                     <button name="action_cancel" type="object"
                             string="Cancel"
-                            groups="hotel_management.group_hotel_frontdesk"
+                            groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"
                             invisible="state in ('checked_out', 'cancelled')"/>
                     <button name="action_set_draft" type="object"
                             string="Reset to Draft"
@@ -97,10 +97,8 @@
                         <group>
                             <field name="guest_id_type"
                                    readonly="state != 'draft'"/>
-                            <field name="guest_id_number"
-                                   readonly="state != 'draft'"/>
-                            <field name="guest_id_expiry"
-                                   readonly="state != 'draft'"/>
+                            <field name="guest_id_number" invisible="1"/>
+                            <field name="guest_id_expiry" invisible="1"/>
                         </group>
                     </group>
 
@@ -192,7 +190,7 @@
                     </group>
 
                     <group string="Billing"
-                           groups="hotel_management.group_hotel_frontdesk">
+                           groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager">
                         <group>
                             <field name="rate" readonly="state != 'draft'"/>
                             <field name="packages_total" readonly="1"/>

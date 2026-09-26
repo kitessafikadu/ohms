@@ -29,7 +29,7 @@ class HotelReservation(models.Model):
          ('driver_license', "Driver's License")],
         required=True, default='national_id', tracking=True,
     )
-    guest_id_number = fields.Char(required=True, tracking=True)
+    guest_id_number = fields.Char(required=False, tracking=True)
     guest_id_expiry = fields.Date()
 
     guest_id_scan_front = fields.Binary(string='ID Front')
@@ -328,6 +328,17 @@ class HotelReservation(models.Model):
                         f'Primary guest must be at least {MIN_AGE} years old.'
                     )
 
+    @api.constrains('state', 'guest_dob')
+    def _check_id_details_before_confirm(self):
+        for rec in self:
+            if rec.state in ('confirmed', 'checked_in', 'checked_out'):
+                if not rec.guest_dob:
+                    raise ValidationError({
+                        'guest_dob':
+                            'Date of birth is required before confirming. '
+                            'Please read it from the uploaded ID image.'
+                    })
+
     @api.constrains('adults', 'children', 'room_id')
     def _check_capacity(self):
         for rec in self:
@@ -438,6 +449,7 @@ class HotelReservation(models.Model):
         'companion_ids', 'guest_email', 'guest_phone',
         'emergency_contact_name', 'emergency_contact_phone',
         'id_verified_by', 'id_verified_on', 'id_verification_notes',
+        'guest_id_number', 'guest_id_expiry', 'guest_dob',
         'message_ids', 'message_follower_ids', 'activity_ids',
     }
 
