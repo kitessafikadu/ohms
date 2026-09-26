@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
-
         <record id="cat_standard" model="hotel.room.category">
             <field name="name">Standard</field>
             <field name="code">STD</field>
@@ -9,19 +8,8 @@
             <field name="capacity_adults">2</field>
             <field name="capacity_children">0</field>
             <field name="bed_configuration">queen</field>
-            <field name="target_audience">Budget travelers, short stays, solo travelers</field>
             <field name="default_rate">80.00</field>
-            <field name="core_features"><![CDATA[
-                <ul>
-                    <li>Queen or King bed</li>
-                    <li>Private bathroom</li>
-                    <li>Work desk</li>
-                    <li>Standard Wi-Fi</li>
-                    <li>Coffee / Tea making facilities</li>
-                </ul>
-            ]]></field>
         </record>
-
         <record id="cat_deluxe" model="hotel.room.category">
             <field name="name">Deluxe</field>
             <field name="code">DLX</field>
@@ -29,21 +17,8 @@
             <field name="capacity_adults">2</field>
             <field name="capacity_children">1</field>
             <field name="bed_configuration">king</field>
-            <field name="target_audience">Business travelers, couples seeking extra comfort</field>
             <field name="default_rate">150.00</field>
-            <field name="core_features"><![CDATA[
-                <ul>
-                    <li>Larger room layout, upgraded bedding</li>
-                    <li>City or ocean view</li>
-                    <li>Expanded seating area</li>
-                    <li>Lounge access</li>
-                    <li>Priority check-in / check-out</li>
-                    <li>Laundry and garment care</li>
-                    <li>Enhanced services</li>
-                </ul>
-            ]]></field>
         </record>
-
         <record id="cat_family" model="hotel.room.category">
             <field name="name">Family Suite</field>
             <field name="code">FAM</field>
@@ -51,18 +26,8 @@
             <field name="capacity_adults">4</field>
             <field name="capacity_children">3</field>
             <field name="bed_configuration">multi</field>
-            <field name="target_audience">Families, group travelers</field>
             <field name="default_rate">220.00</field>
-            <field name="core_features"><![CDATA[
-                <ul>
-                    <li>Two connecting rooms or multi-bedroom layout</li>
-                    <li>Sofa bed, kitchenette, dining table</li>
-                    <li>Kids facilities</li>
-                    <li>In-room dining discounts</li>
-                </ul>
-            ]]></field>
         </record>
-
         <record id="cat_presidential" model="hotel.room.category">
             <field name="name">Presidential Suite</field>
             <field name="code">PRES</field>
@@ -70,20 +35,7 @@
             <field name="capacity_adults">4</field>
             <field name="capacity_children">2</field>
             <field name="bed_configuration">king</field>
-            <field name="target_audience">VIPs, luxury travelers, special occasions</field>
             <field name="default_rate">850.00</field>
-            <field name="core_features"><![CDATA[
-                <ul>
-                    <li>Top-floor views, separate living / dining rooms</li>
-                    <li>Master bedroom with walk-in closet</li>
-                    <li>Private balcony / terrace</li>
-                    <li>Marble bathroom with Jacuzzi</li>
-                    <li>Personal butler service</li>
-                    <li>Airport pickup, chef-customized breakfast</li>
-                    <li>In-suite spa</li>
-                </ul>
-            ]]></field>
         </record>
-
     </data>
 </odoo>

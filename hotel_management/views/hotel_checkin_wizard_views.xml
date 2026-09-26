@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hotel_checkin_wizard_form" model="ir.ui.view">
+        <field name="name">hotel.checkin.wizard.form</field>
+        <field name="model">hotel.checkin.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Verify Guest ID">
+                <header>
+                    <button name="action_confirm_checkin" type="object"
+                            string="Confirm Check-In"
+                            class="oe_highlight"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </header>
+                <sheet>
+                    <group invisible="not is_expired and not is_underage">
+                        <div class="alert alert-warning">
+                            <p invisible="not is_expired">
+                                ID document has expired. Escalate to manager.
+                            </p>
+                            <p invisible="not is_underage">
+                                Guest appears under 18. Verify with manager.
+                            </p>
+                        </div>
+                    </group>
+                    <group invisible="has_scan">
+                        <div class="alert alert-info">
+                            No ID scan on file. Ask for the physical ID.
+                        </div>
+                    </group>
+                    <group string="Guest Details">
+                        <group>
+                            <field name="guest_name"/>
+                            <field name="guest_id_type"/>
+                            <field name="guest_id_number"/>
+                        </group>
+                        <group>
+                            <field name="guest_id_expiry"/>
+                            <field name="guest_dob"/>
+                            <field name="guest_age"/>
+                            <field name="room_id"/>
+                            <field name="reservation_id" invisible="1"/>
+                            <field name="is_expired" invisible="1"/>
+                            <field name="is_underage" invisible="1"/>
+                            <field name="has_scan" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="ID Images">
+                            <group>
+                                <group string="Front">
+                                    <field name="guest_id_scan_front"
+                                           widget="image"
+                                           nolabel="1"
+                                           options="{'size': [400, 250]}"/>
+                                </group>
+                                <group string="Back">
+                                    <field name="guest_id_scan_back"
+                                           widget="image"
+                                           nolabel="1"
+                                           options="{'size': [400, 250]}"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Verification Checklist">
+                            <group>
+                                <field name="id_matches_guest"/>
+                                <field name="id_not_expired"/>
+                                <field name="age_verified"/>
+                            </group>
+                            <group>
+                                <field name="notes"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

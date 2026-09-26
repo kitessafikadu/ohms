@@ -1,21 +1,25 @@
 import base64
+import json
 import re
-from datetime import date
+import urllib.parse
+from datetime import date, timedelta
 
 from odoo import http
 from odoo.http import request
 
 
-# ------------------------------------------------------------------
-# Validation helpers
-# ------------------------------------------------------------------
 NAME_RE = re.compile(r"^[A-Za-z][A-Za-z'\-]*(?:\s+[A-Za-z][A-Za-z'\-]*)+$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
 ID_RE = re.compile(r"^[A-Za-z0-9\- ]{4,32}$")
 PHONE_RE = re.compile(r"^(?:\+?\d{1,4}[\s\-]?)?\d{6,12}$")
 
-MAX_ID_SCAN_SIZE = 5 * 1024 * 1024        # 5 MB
-ALLOWED_ID_SCAN_EXT = ('.jpg', '.jpeg', '.png', '.pdf')
+MAX_ID_SCAN_BYTES = 5 * 1024 * 1024
+MAX_ID_SCAN_LABEL = '5 MB'
+
+ALLOWED_MAGIC_BYTES = (
+    (b'\x89PNG\r\n\x1a\n', 'image/png', 'PNG'),
+    (b'\xff\xd8\xff', 'image/jpeg', 'JPG'),
+)
 
 
 def _clean(value):
@@ -26,11 +30,50 @@ def _normalize_phone(phone):
     return re.sub(r"[\s\-()]+", "", phone or "")
 
 
-def _validate_booking(post, has_id_scan=False):
-    """Return a list of error strings. Empty list = valid."""
+def _sniff_file_type(data):
+    for magic, mime, label in ALLOWED_MAGIC_BYTES:
+        if data.startswith(magic):
+            return mime, label
+    return None, None
+
+
+def _read_id_file(uploaded_file):
+    if not uploaded_file or not uploaded_file.filename:
+        return False, False, None
+
+    filename = uploaded_file.filename
+    data = uploaded_file.read()
+
+    if not data:
+        return False, False, 'The uploaded file is empty.'
+
+    size = len(data)
+    if size > MAX_ID_SCAN_BYTES:
+        size_mb = round(size / (1024 * 1024), 2)
+        return False, False, (
+            f'File is {size_mb} MB — the maximum allowed is '
+            f'{MAX_ID_SCAN_LABEL}. Please resize or compress the image.'
+        )
+
+    if not filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+        return False, False, (
+            'Only JPG and PNG files are accepted. '
+            'Convert your file and try again.'
+        )
+
+    detected_mime, detected_label = _sniff_file_type(data)
+    if not detected_mime:
+        return False, False, (
+            'The file does not appear to be a valid JPG or PNG image. '
+            'Please re-save it as JPG or PNG and try again.'
+        )
+
+    return base64.b64encode(data), filename, None
+
+
+def _validate_booking(post):
     errors = []
 
-    # Full name
     name = _clean(post.get("guest_name"))
     if not name:
         errors.append("Full name is required.")
@@ -40,14 +83,12 @@ def _validate_booking(post, has_id_scan=False):
             "(first name and last name, letters only)."
         )
 
-    # Email
     email = _clean(post.get("email") or post.get("guest_email"))
     if not email:
         errors.append("Email is required.")
     elif not EMAIL_RE.match(email):
         errors.append("Please enter a valid email address.")
 
-    # Phone
     phone = _normalize_phone(post.get("phone") or post.get("guest_phone"))
     if not phone:
         errors.append("Phone number is required.")
@@ -66,7 +107,6 @@ def _validate_booking(post, has_id_scan=False):
                     "or 13 digits with country code (e.g. 251912345678)."
                 )
 
-    # ID number
     id_number = _clean(post.get("guest_id_number"))
     if not id_number:
         errors.append("ID number is required.")
@@ -76,7 +116,6 @@ def _validate_booking(post, has_id_scan=False):
             "(letters, digits, hyphens or spaces)."
         )
 
-    # DOB + age
     dob_str = _clean(post.get("guest_dob"))
     if not dob_str:
         errors.append("Date of birth is required.")
@@ -94,7 +133,6 @@ def _validate_booking(post, has_id_scan=False):
         except ValueError:
             errors.append("Invalid date of birth format.")
 
-    # Check-in / check-out
     check_in = _clean(post.get("check_in_date"))
     check_out = _clean(post.get("check_out_date"))
 
@@ -115,7 +153,6 @@ def _validate_booking(post, has_id_scan=False):
     elif co and ci and co <= ci:
         errors.append("Check-out must be after check-in.")
 
-    # Adults / children
     try:
         adults = int(post.get("adults") or 0)
         children = int(post.get("children") or 0)
@@ -128,16 +165,12 @@ def _validate_booking(post, has_id_scan=False):
     if children < 0:
         errors.append("Children count cannot be negative.")
 
-    # Room
     if not post.get("room_id"):
         errors.append("Please select a room.")
 
     return errors
 
 
-# ------------------------------------------------------------------
-# Controller
-# ------------------------------------------------------------------
 class HotelPublicBooking(http.Controller):
 
     @http.route('/hotel/book', type='http', auth='public', website=True)
@@ -145,10 +178,20 @@ class HotelPublicBooking(http.Controller):
         today = date.today()
         categories = request.env['hotel.room.category'].sudo().search(
             [('active', '=', True)])
+
+        field_errors = {}
+        raw = kw.get('field_errors')
+        if raw:
+            try:
+                field_errors = json.loads(urllib.parse.unquote(raw))
+            except (ValueError, TypeError):
+                field_errors = {}
+
         return request.render('hotel_management.public_booking_form', {
             'categories': categories,
-            'min_check_in': today.isoformat(),
-            'min_check_out': today.isoformat(),
+            'min_check_in': (today + timedelta(days=1)).isoformat(),
+            'min_check_out': (today + timedelta(days=2)).isoformat(),
+            'field_errors': field_errors,
             'error': kw.get('error'),
         })
 
@@ -166,37 +209,28 @@ class HotelPublicBooking(http.Controller):
         ])
 
     @http.route('/hotel/book/submit', type='http', auth='public',
-            website=True, methods=['POST'], csrf=True)
+                website=True, methods=['POST'], csrf=True)
     def booking_submit(self, **post):
-        # -------- Read the uploaded ID scan
-        guest_id_scan_b64 = False
-        guest_id_scan_filename = False
+        front_file = request.httprequest.files.get('guest_id_scan_front')
+        back_file = request.httprequest.files.get('guest_id_scan_back')
 
-        uploaded_file = request.httprequest.files.get('guest_id_scan')
-        if uploaded_file and uploaded_file.filename:
-            filename = uploaded_file.filename
-            file_data = uploaded_file.read()
+        front_b64, front_name, front_err = _read_id_file(front_file)
+        back_b64, back_name, back_err = _read_id_file(back_file)
 
-            if len(file_data) > MAX_ID_SCAN_SIZE:
-                return request.redirect(
-                    '/hotel/book?error=' +
-                    'ID scan must be smaller than 5 MB.')
+        field_errors = {}
+        if front_err:
+            field_errors['guest_id_scan_front'] = front_err
+        if back_err:
+            field_errors['guest_id_scan_back'] = back_err
 
-            if not filename.lower().endswith(ALLOWED_ID_SCAN_EXT):
-                return request.redirect(
-                    '/hotel/book?error=' +
-                    'ID scan must be a JPG, PNG, or PDF file.')
+        text_errors = _validate_booking(post)
+        if text_errors:
+            field_errors['__general__'] = ' | '.join(text_errors)
 
-            guest_id_scan_b64 = base64.b64encode(file_data)
-            guest_id_scan_filename = filename
+        if field_errors:
+            encoded = urllib.parse.quote(json.dumps(field_errors))
+            return request.redirect(f'/hotel/book?field_errors={encoded}')
 
-        # -------- Text-field validation
-        errors = _validate_booking(post)
-        if errors:
-            return request.redirect(
-                '/hotel/book?error=' + ' | '.join(errors))
-
-        # -------- Create reservation
         try:
             Partner = request.env['res.partner'].sudo()
             guest_email = _clean(post.get('email') or post.get('guest_email'))
@@ -216,8 +250,10 @@ class HotelPublicBooking(http.Controller):
                 'guest_id_type': post.get('guest_id_type') or 'national_id',
                 'guest_id_number': _clean(post.get('guest_id_number')),
                 'guest_id_expiry': post.get('guest_id_expiry') or False,
-                'guest_id_scan': guest_id_scan_b64,
-                'guest_id_scan_filename': guest_id_scan_filename,
+                'guest_id_scan_front': front_b64,
+                'guest_id_scan_front_filename': front_name,
+                'guest_id_scan_back': back_b64,
+                'guest_id_scan_back_filename': back_name,
                 'guest_dob': post.get('guest_dob') or False,
                 'guest_email': guest_email,
                 'guest_phone': guest_phone,
@@ -234,7 +270,8 @@ class HotelPublicBooking(http.Controller):
             })
         except Exception as e:
             request.env.cr.rollback()
-            return request.redirect(f'/hotel/book?error={e}')
+            encoded = urllib.parse.quote(json.dumps({'__general__': str(e)}))
+            return request.redirect(f'/hotel/book?field_errors={encoded}')
 
         return request.render('hotel_management.public_booking_thanks', {
             'reservation': reservation,

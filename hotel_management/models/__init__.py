@@ -9,6 +9,7 @@ from . import hotel_reservation_guest
 from . import hotel_reservation_feedback
 from . import hotel_reservation_package
 from . import hotel_housekeeping
-from . import hotel_dashboard
 from . import hotel_venue
 from . import hotel_event
+from . import hotel_checkin_wizard
+from . import hotel_dashboard

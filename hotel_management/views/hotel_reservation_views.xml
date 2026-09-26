@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- =========================================================
-         LIST
-         ========================================================= -->
     <record id="view_hotel_reservation_list" model="ir.ui.view">
         <field name="name">hotel.reservation.list</field>
         <field name="model">hotel.reservation</field>
@@ -12,8 +9,7 @@
                 decoration-info="state == 'draft'"
                 decoration-success="state == 'checked_in'"
                 decoration-muted="state in ('checked_out', 'cancelled')"
-                decoration-warning="invoice_status == 'to_invoice' and state == 'checked_out'"
-            >
+                decoration-warning="invoice_status == 'to_invoice' and state == 'checked_out'">
                 <field name="name"/>
                 <field name="guest_name"/>
                 <field name="guest_id_type"/>
@@ -37,9 +33,6 @@
         </field>
     </record>
 
-    <!-- =========================================================
-         FORM
-         ========================================================= -->
     <record id="view_hotel_reservation_form" model="ir.ui.view">
         <field name="name">hotel.reservation.form</field>
         <field name="model">hotel.reservation</field>
@@ -108,11 +101,34 @@
                                    readonly="state != 'draft'"/>
                             <field name="guest_id_expiry"
                                    readonly="state != 'draft'"/>
-                            <field name="guest_id_scan"
-                                   filename="guest_id_scan_filename"
-                                   readonly="state != 'draft'"/>
-                            <field name="guest_id_scan_filename" invisible="1"/>
                         </group>
+                    </group>
+
+                    <group string="ID Images">
+                        <group string="Front">
+                            <field name="guest_id_scan_front"
+                                   filename="guest_id_scan_front_filename"
+                                   widget="image"
+                                   readonly="state != 'draft'"/>
+                            <field name="guest_id_scan_front_filename"
+                                   invisible="1"/>
+                        </group>
+                        <group string="Back">
+                            <field name="guest_id_scan_back"
+                                   filename="guest_id_scan_back_filename"
+                                   widget="image"
+                                   readonly="state != 'draft'"/>
+                            <field name="guest_id_scan_back_filename"
+                                   invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group string="ID Verification"
+                           invisible="not id_verified_by"
+                           groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager">
+                        <field name="id_verified_by" readonly="1"/>
+                        <field name="id_verified_on" readonly="1"/>
+                        <field name="id_verification_notes" readonly="1"/>
                     </group>
 
                     <group string="Contact Details">
@@ -242,9 +258,6 @@
         </field>
     </record>
 
-    <!-- =========================================================
-         SEARCH
-         ========================================================= -->
     <record id="view_hotel_reservation_search" model="ir.ui.view">
         <field name="name">hotel.reservation.search</field>
         <field name="model">hotel.reservation</field>
@@ -318,22 +331,17 @@
         </field>
     </record>
 
-    <!-- =========================================================
-         CALENDAR
-         ========================================================= -->
     <record id="view_hotel_reservation_calendar" model="ir.ui.view">
         <field name="name">hotel.reservation.calendar</field>
         <field name="model">hotel.reservation</field>
         <field name="arch" type="xml">
-            <calendar
-                string="Reservations"
-                date_start="check_in_date"
-                date_stop="check_out_date"
-                color="room_id"
-                event_open_popup="true"
-                quick_create="false"
-                mode="month"
-            >
+            <calendar string="Reservations"
+                      date_start="check_in_date"
+                      date_stop="check_out_date"
+                      color="room_id"
+                      event_open_popup="true"
+                      quick_create="false"
+                      mode="month">
                 <field name="guest_name"/>
                 <field name="room_id"/>
                 <field name="state"/>
@@ -344,9 +352,6 @@
         </field>
     </record>
 
-    <!-- =========================================================
-         ACTIONS
-         ========================================================= -->
     <record id="action_hotel_reservation" model="ir.actions.act_window">
         <field name="name">Reservations</field>
         <field name="res_model">hotel.reservation</field>

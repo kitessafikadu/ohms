@@ -47,3 +47,7 @@ access_event_manager,hotel.event.manager,model_hotel_event,group_hotel_manager,1
 access_catering_frontdesk,hotel.event.catering.line.frontdesk,model_hotel_event_catering_line,group_hotel_frontdesk,1,1,1,1
 access_catering_waitstaff,hotel.event.catering.line.waitstaff,model_hotel_event_catering_line,group_hotel_waitstaff,1,0,0,0
 access_catering_manager,hotel.event.catering.line.manager,model_hotel_event_catering_line,group_hotel_manager,1,1,1,1
+access_hotel_dashboard_user,hotel.dashboard.user,model_hotel_dashboard,group_hotel_frontdesk,1,1,1,1
+access_hotel_dashboard_manager,hotel.dashboard.manager,model_hotel_dashboard,group_hotel_manager,1,1,1,1
+access_hotel_checkin_wizard_user,hotel.checkin.wizard.user,model_hotel_checkin_wizard,group_hotel_frontdesk,1,1,1,1
+access_hotel_checkin_wizard_manager,hotel.checkin.wizard.manager,model_hotel_checkin_wizard,group_hotel_manager,1,1,1,1
