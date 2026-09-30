@@ -259,6 +259,29 @@ class HotelReservation(models.Model):
                 }
             }
 
+    @api.onchange('check_in_date', 'check_out_date', 'state')
+    def _onchange_dates_room_domain(self):
+        """Filter the room dropdown to exclude rooms already booked."""
+        if not (self.check_in_date and self.check_out_date):
+            return {'domain': {'room_id': []}}
+
+        exclude_id = self._origin.id if self._origin else 0
+        busy_ids = self.env['hotel.reservation'].search([
+            ('id', '!=', exclude_id),
+            ('state', 'in', ('confirmed', 'checked_in')),
+            ('check_in_date', '<', self.check_out_date),
+            ('check_out_date', '>', self.check_in_date),
+        ]).mapped('room_id').ids
+
+        return {
+            'domain': {
+                'room_id': [
+                    ('id', 'not in', busy_ids),
+                    ('maintenance_hold', '=', False),
+                ]
+            }
+        }
+
     @api.onchange('room_id')
     def _onchange_room_id(self):
         for rec in self:
@@ -309,14 +332,21 @@ class HotelReservation(models.Model):
         today = fields.Date.context_today(self)
         for rec in self:
             if rec.check_in_date and rec.check_in_date < today:
-                raise ValidationError('Check-in date cannot be in the past.')
+                raise ValidationError({
+                    'check_in_date':
+                        'Check-in date cannot be in the past.'
+                })
             if rec.check_out_date and rec.check_out_date < today:
-                raise ValidationError('Check-out date cannot be in the past.')
+                raise ValidationError({
+                    'check_out_date':
+                        'Check-out date cannot be in the past.'
+                })
             if (rec.check_in_date and rec.check_out_date
                     and rec.check_out_date <= rec.check_in_date):
-                raise ValidationError(
-                    'Check-out date must be strictly after check-in date.'
-                )
+                raise ValidationError({
+                    'check_out_date':
+                        'Check-out date must be strictly after check-in date.'
+                })
 
     @api.constrains('guest_dob')
     def _check_adult(self):
@@ -324,9 +354,11 @@ class HotelReservation(models.Model):
             if rec.guest_dob:
                 age = fields.Date.today().year - rec.guest_dob.year
                 if age < MIN_AGE:
-                    raise ValidationError(
-                        f'Primary guest must be at least {MIN_AGE} years old.'
-                    )
+                    raise ValidationError({
+                        'guest_dob':
+                            f'Primary guest must be at least {MIN_AGE} '
+                            f'years old.'
+                    })
 
     @api.constrains('state', 'guest_dob')
     def _check_id_details_before_confirm(self):
@@ -349,30 +381,34 @@ class HotelReservation(models.Model):
             children = rec.children or 0
 
             if adults + children < 1:
-                raise ValidationError(
-                    'A reservation must have at least one guest.'
-                )
+                raise ValidationError({
+                    'adults':
+                        'A reservation must have at least one guest.'
+                })
 
             if adults > cat.capacity_adults:
                 raise ValidationError({
-                    'adults': f'{rec.room_id.name} allows at most '
-                              f'{cat.capacity_adults} adult(s). '
-                              f'You entered {adults}.',
+                    'adults':
+                        f'{rec.room_id.name} allows at most '
+                        f'{cat.capacity_adults} adult(s). '
+                        f'You entered {adults}.'
                 })
 
             if children > cat.capacity_children:
                 raise ValidationError({
-                    'children': f'{rec.room_id.name} allows at most '
-                                f'{cat.capacity_children} child(ren). '
-                                f'You entered {children}.',
+                    'children':
+                        f'{rec.room_id.name} allows at most '
+                        f'{cat.capacity_children} child(ren). '
+                        f'You entered {children}.'
                 })
 
             max_total = cat.capacity_adults + cat.capacity_children
             if adults + children > max_total:
                 raise ValidationError({
-                    'adults': f'{rec.room_id.name} allows at most '
-                              f'{max_total} guest(s) in total. '
-                              f'You entered {adults + children}.',
+                    'adults':
+                        f'{rec.room_id.name} allows at most '
+                        f'{max_total} guest(s) in total. '
+                        f'You entered {adults + children}.'
                 })
 
     @api.constrains('guest_id_scan_front', 'guest_id_scan_back')
@@ -390,21 +426,37 @@ class HotelReservation(models.Model):
                 if raw_len > MAX_ID_SCAN_BYTES:
                     mb = round(raw_len / (1024 * 1024), 2)
                     raise ValidationError({
-                        fname: (
+                        fname:
                             f'{label} is {mb} MB — the maximum allowed '
                             f'is 5 MB. Please resize or compress the image.'
-                        )
                     })
 
     @api.constrains('room_id', 'check_in_date', 'check_out_date', 'state')
     def _check_no_double_booking(self):
         for rec in self:
-            if rec.state in ('cancelled', 'checked_out', 'draft'):
+            if rec.state in ('cancelled', 'checked_out'):
                 continue
-            if rec._find_overlapping_reservations():
-                raise ValidationError(
-                    f'{rec.room_id.name} is already reserved for that period.'
-                )
+            if not (rec.room_id and rec.check_in_date
+                    and rec.check_out_date):
+                continue
+
+            conflicts = self.search([
+                ('id', '!=', rec.id),
+                ('room_id', '=', rec.room_id.id),
+                ('state', 'in', ('confirmed', 'checked_in')),
+                ('check_in_date', '<', rec.check_out_date),
+                ('check_out_date', '>', rec.check_in_date),
+            ], limit=1)
+
+            if conflicts:
+                raise ValidationError({
+                    'room_id':
+                        f'{rec.room_id.name} is already booked for '
+                        f'{conflicts.check_in_date} to '
+                        f'{conflicts.check_out_date} '
+                        f'(reservation {conflicts.name}). '
+                        f'Please pick another room or change the dates.'
+                })
 
     def _find_overlapping_reservations(self):
         self.ensure_one()
@@ -477,9 +529,15 @@ class HotelReservation(models.Model):
             if rec.state != 'draft':
                 raise UserError('Only draft reservations can be confirmed.')
             if rec.room_id.maintenance_hold:
-                raise UserError(f'{rec.room_id.name} is on maintenance hold.')
-            if rec._find_overlapping_reservations():
-                raise UserError(f'{rec.room_id.name} is already booked.')
+                raise UserError(
+                    f'{rec.room_id.name} is on maintenance hold.'
+                )
+            overlap = rec._find_overlapping_reservations()
+            if overlap:
+                raise UserError(
+                    f'{rec.room_id.name} is already booked for these dates '
+                    f'(reservation {overlap.name}).'
+                )
             rec.state = 'confirmed'
 
     def action_check_in(self):
@@ -500,7 +558,9 @@ class HotelReservation(models.Model):
         self._check_frontdesk('check a guest out')
         for rec in self:
             if rec.state != 'checked_in':
-                raise UserError('Only checked-in reservations can be checked out.')
+                raise UserError(
+                    'Only checked-in reservations can be checked out.'
+                )
             rec.write({'state': 'checked_out'})
 
     def action_cancel(self):
@@ -559,7 +619,8 @@ class HotelReservation(models.Model):
 
         if self.total_nights and self.rate:
             room_product = self.env.ref(
-                'hotel_management.product_hotel_room', raise_if_not_found=False)
+                'hotel_management.product_hotel_room',
+                raise_if_not_found=False)
             lines.append((0, 0, {
                 'product_id': room_product.id if room_product else False,
                 'name': (
@@ -573,7 +634,8 @@ class HotelReservation(models.Model):
             }))
 
         package_product = self.env.ref(
-            'hotel_management.product_hotel_package', raise_if_not_found=False)
+            'hotel_management.product_hotel_package',
+            raise_if_not_found=False)
         for pkg in self.package_ids.filtered(lambda p: p.price):
             lines.append((0, 0, {
                 'product_id': package_product.id if package_product else False,
@@ -584,7 +646,8 @@ class HotelReservation(models.Model):
 
         if self.extra_charges:
             extra_product = self.env.ref(
-                'hotel_management.product_hotel_extra', raise_if_not_found=False)
+                'hotel_management.product_hotel_extra',
+                raise_if_not_found=False)
             lines.append((0, 0, {
                 'product_id': extra_product.id if extra_product else False,
                 'name': 'Extra charges (F&B, services)',

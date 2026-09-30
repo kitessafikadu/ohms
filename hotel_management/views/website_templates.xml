@@ -257,15 +257,27 @@
                             sel.innerHTML = '<option value="">-- select a category first --</option>';
                             return;
                         }
+
+                        var ciEl = document.getElementById('check_in_date');
+                        var coEl = document.getElementById('check_out_date');
+                        var ci = ciEl ? ciEl.value : '';
+                        var co = coEl ? coEl.value : '';
+
+                        var url = '/hotel/rooms/' + categoryId;
+                        if (ci && co) {
+                            url += '?check_in=' + encodeURIComponent(ci) +
+                                   '&check_out=' + encodeURIComponent(co);
+                        }
+
                         sel.innerHTML = '<option value="">Loading\u2026</option>';
-                        fetch('/hotel/rooms/' + categoryId)
+                        fetch(url)
                             .then(function (r) {
                                 if (!r.ok) throw new Error('HTTP ' + r.status);
                                 return r.json();
                             })
                             .then(function (rooms) {
                                 if (!rooms.length) {
-                                    sel.innerHTML = '<option value="">-- no rooms available --</option>';
+                                    sel.innerHTML = '<option value="">-- no rooms available for these dates --</option>';
                                     return;
                                 }
                                 sel.innerHTML = rooms.map(function (r) {
@@ -409,6 +421,19 @@
                             }
                         }
 
+                        // Reload room list when dates change
+                        ['check_in_date', 'check_out_date'].forEach(function (id) {
+                            var el = document.getElementById(id);
+                            if (el) {
+                                el.addEventListener('change', function () {
+                                    var c = document.getElementById('category');
+                                    if (c && c.value) {
+                                        loadRooms(c.value);
+                                    }
+                                });
+                            }
+                        });
+
                         var form = document.getElementById('booking-form');
                         if (!form) return;
 
@@ -508,7 +533,7 @@
                                 <dt class="col-sm-4">Status</dt>
                                 <dd class="col-sm-8">
                                     <span class="badge text-bg-secondary"
-                                        t-esc="reservation.state"/>
+                                          t-esc="reservation.state"/>
                                 </dd>
                             </dl>
                         </div>
@@ -525,7 +550,7 @@
                 </div>
 
                 <div class="text-center mt-4 text-muted"
-                    t-if="partner and partner.email">
+                     t-if="partner and partner.email">
                     <p>
                         A confirmation will be sent to
                         <b t-esc="partner.email"/>.
@@ -539,7 +564,7 @@
                 </div>
 
                 <p class="text-center text-muted mt-3"
-                t-if="not partner or not partner.email">
+                   t-if="not partner or not partner.email">
                     Save this page or write down your reservation reference.
                     You'll need it at check-in.
                 </p>

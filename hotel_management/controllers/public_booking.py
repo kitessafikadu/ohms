@@ -138,8 +138,28 @@ def _validate_booking(post):
     if children < 0:
         errors.append("Children count cannot be negative.")
 
-    if not post.get("room_id"):
+    room_id = post.get("room_id")
+    if not room_id:
         errors.append("Please select a room.")
+    else:
+        try:
+            room_id = int(room_id)
+        except (TypeError, ValueError):
+            errors.append("Invalid room selection.")
+            room_id = None
+
+        if room_id and ci and co:
+            overlapping = request.env['hotel.reservation'].sudo().search([
+                ('room_id', '=', room_id),
+                ('state', 'in', ('confirmed', 'checked_in')),
+                ('check_in_date', '<', co),
+                ('check_out_date', '>', ci),
+            ], limit=1)
+            if overlapping:
+                errors.append(
+                    "Sorry, the selected room has just been booked for "
+                    "those dates. Please choose another room."
+                )
 
     return errors
 
@@ -171,11 +191,34 @@ class HotelPublicBooking(http.Controller):
     @http.route('/hotel/rooms/<int:category_id>', type='http',
                 auth='public', website=True)
     def rooms_by_category(self, category_id, **kw):
+        check_in = kw.get('check_in')
+        check_out = kw.get('check_out')
+
         Room = request.env['hotel.room'].sudo()
-        rooms = Room.search([
+        domain = [
             ('category_id', '=', category_id),
             ('maintenance_hold', '=', False),
-        ])
+        ]
+
+        if check_in and check_out:
+            try:
+                ci = date.fromisoformat(check_in)
+                co = date.fromisoformat(check_out)
+            except ValueError:
+                ci = co = None
+
+            if ci and co and co > ci:
+                Reservation = request.env['hotel.reservation'].sudo()
+                busy_room_ids = Reservation.search([
+                    ('state', 'in', ('confirmed', 'checked_in')),
+                    ('check_in_date', '<', co),
+                    ('check_out_date', '>', ci),
+                ]).mapped('room_id').ids
+
+                if busy_room_ids:
+                    domain.append(('id', 'not in', busy_room_ids))
+
+        rooms = Room.search(domain)
         return request.make_json_response([
             {'id': r.id, 'name': r.name, 'rate': r.rate}
             for r in rooms
