@@ -59,6 +59,23 @@ class HotelReservation(models.Model):
     emergency_contact_relation = fields.Char()
 
     vehicle_plate = fields.Char(string='Vehicle Plate')
+    
+    corporate_account_id = fields.Many2one(
+        'hotel.corporate.account',
+        string='Corporate Account',
+        tracking=True,
+        help='If set, this stay is billed to the company instead of '
+             'the guest.',
+    )
+    corporate_employee_id = fields.Many2one(
+        'hotel.corporate.employee',
+        string='Employee',
+        domain="[('account_id', '=', corporate_account_id), "
+               "('active', '=', True)]",
+    )
+    is_corporate = fields.Boolean(
+        compute='_compute_is_corporate', store=True,
+    )
 
     room_id = fields.Many2one('hotel.room', required=True, tracking=True)
     category_id = fields.Many2one(
@@ -175,6 +192,11 @@ class HotelReservation(models.Model):
     def _compute_companion_count(self):
         for rec in self:
             rec.companion_count = len(rec.companion_ids)
+            
+    @api.depends('corporate_account_id')
+    def _compute_is_corporate(self):
+        for rec in self:
+            rec.is_corporate = bool(rec.corporate_account_id)
 
     @api.depends('package_ids.price')
     def _compute_packages_total(self):
@@ -503,6 +525,7 @@ class HotelReservation(models.Model):
         'id_verified_by', 'id_verified_on', 'id_verification_notes',
         'guest_id_number', 'guest_id_expiry', 'guest_dob',
         'message_ids', 'message_follower_ids', 'activity_ids',
+        'corporate_account_id', 'corporate_employee_id',
     }
 
     def write(self, vals):
@@ -660,6 +683,13 @@ class HotelReservation(models.Model):
     def action_create_invoice(self):
         self.ensure_one()
 
+        if self.corporate_account_id:
+            raise UserError(
+                'This stay is billed through its corporate account '
+                f'({self.corporate_account_id.name}). '
+                'Generate the invoice from Hotel → Corporate → Accounts.'
+            )
+        
         if self.state in ('draft', 'cancelled'):
             raise UserError(
                 'You can only invoice confirmed, checked-in, or '

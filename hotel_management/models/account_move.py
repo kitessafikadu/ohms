@@ -1,5 +1,6 @@
 from odoo import fields, models
 
+
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
@@ -9,5 +10,11 @@ class AccountMove(models.Model):
         ondelete='set null',
         index=True,
         copy=False,
-        help='Reservation this invoice or credit note was generated for.',
+    )
+    corporate_account_id = fields.Many2one(
+        'hotel.corporate.account',
+        string='Corporate Account',
+        ondelete='set null',
+        index=True,
+        copy=False,
     )

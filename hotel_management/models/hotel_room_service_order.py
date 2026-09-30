@@ -64,6 +64,22 @@ class HotelRoomServiceOrder(models.Model):
     posted_to_reservation = fields.Boolean(
         'Charged to Reservation', default=False, readonly=True, copy=False,
     )
+    
+    corporate_account_id = fields.Many2one(
+        'hotel.corporate.account',
+        string='Corporate Account',
+        help='If set, the charge is billed to this company instead of '
+             'the reservation.',
+    )
+    corporate_employee_id = fields.Many2one(
+        'hotel.corporate.employee',
+        string='Employee',
+        domain="[('account_id', '=', corporate_account_id), "
+               "('active', '=', True)]",
+    )
+    is_corporate = fields.Boolean(
+        compute='_compute_is_corporate', store=True,
+    )
 
     @api.depends('source', 'quantity', 'unit_price')
     def _compute_amount(self):
@@ -72,6 +88,11 @@ class HotelRoomServiceOrder(models.Model):
                 rec.amount = 0.0
             else:
                 rec.amount = (rec.quantity or 0.0) * (rec.unit_price or 0.0)
+                
+    @api.depends('corporate_account_id')
+    def _compute_is_corporate(self):
+        for rec in self:
+            rec.is_corporate = bool(rec.corporate_account_id)
 
     @api.onchange('service_id')
     def _onchange_service_id(self):
@@ -79,6 +100,14 @@ class HotelRoomServiceOrder(models.Model):
             self.unit_price = self.service_id.unit_price
             if not self.description:
                 self.description = self.service_id.description or self.service_id.name
+                
+    @api.onchange('reservation_id')
+    def _onchange_reservation_id_corporate(self):
+        if self.reservation_id and self.reservation_id.corporate_account_id:
+            self.corporate_account_id = \
+                self.reservation_id.corporate_account_id
+            self.corporate_employee_id = \
+                self.reservation_id.corporate_employee_id
 
     def action_preparing(self):
         for rec in self:
@@ -89,19 +118,26 @@ class HotelRoomServiceOrder(models.Model):
     def action_deliver(self):
         for rec in self:
             if rec.state not in ('draft', 'preparing'):
-                raise UserError('Only draft or preparing orders can be delivered.')
+                raise UserError(
+                    'Only draft or preparing orders can be delivered.'
+                )
             if rec.reservation_id.state != 'checked_in':
                 raise UserError('Guest must be checked in.')
+
             if rec.source == 'ad_hoc':
                 if rec.amount > 0 and not rec.posted_to_reservation:
-                    rec.reservation_id.sudo().write({
-                        'extra_charges':
-                            rec.reservation_id.extra_charges + rec.amount,
-                    })
-                    rec.posted_to_reservation = True
+                    if rec.corporate_account_id:
+                        rec.posted_to_reservation = True
+                    else:
+                        rec.reservation_id.sudo().write({
+                            'extra_charges':
+                                rec.reservation_id.extra_charges + rec.amount,
+                        })
+                        rec.posted_to_reservation = True
             else:
                 if rec.entitlement_id:
                     rec.entitlement_id.consume(rec.quantity)
+
             rec.state = 'delivered'
             rec.delivered_date = fields.Datetime.now()
 

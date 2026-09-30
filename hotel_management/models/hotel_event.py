@@ -60,10 +60,18 @@ class HotelEvent(models.Model):
         'res.users', string='Event Coordinator',
         default=lambda self: self.env.user, tracking=True,
     )
+    
+        billing_mode = fields.Selection(
+        [('guest', 'Billed to Guest / Organizer'),
+         ('corporate', 'Billed to Company')],
+        default='guest', required=True, tracking=True,
+    )
+        
+    corporate_account_id = fields.Many2one(
+        'hotel.corporate.account',
+        string='Corporate Account',
+    )
 
-    # =================================================================
-    # Catering (via hotel.room.service catalogue)
-    # =================================================================
     catering_line_ids = fields.One2many(
         'hotel.event.catering.line', 'event_id',
         string='Catering',

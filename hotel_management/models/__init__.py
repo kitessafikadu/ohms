@@ -13,3 +13,4 @@ from . import hotel_venue
 from . import hotel_event
 from . import hotel_checkin_wizard
 from . import hotel_dashboard
+from . import hotel_corporate_account
