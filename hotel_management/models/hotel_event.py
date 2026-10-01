@@ -61,7 +61,7 @@ class HotelEvent(models.Model):
         default=lambda self: self.env.user, tracking=True,
     )
     
-        billing_mode = fields.Selection(
+    billing_mode = fields.Selection(
         [('guest', 'Billed to Guest / Organizer'),
          ('corporate', 'Billed to Company')],
         default='guest', required=True, tracking=True,

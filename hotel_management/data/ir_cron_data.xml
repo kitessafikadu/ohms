@@ -1,17 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="cron_expire_draft_reservations" model="ir.cron">
-        <field name="name">Hotel: expire stale draft reservations</field>
-        <field name="model_id" ref="model_hotel_reservation"/>
-        <field name="state">code</field>
-        <field name="code">
+    <data noupdate="1">
+
+        <record id="cron_expire_draft_reservations" model="ir.cron">
+            <field name="name">Hotel: expire stale draft reservations</field>
+            <field name="model_id" ref="model_hotel_reservation"/>
+            <field name="state">code</field>
+            <field name="code">
 stale = model.search([
     ('state', '=', 'draft'),
     ('create_date', '&lt;', fields.Datetime.subtract(fields.Datetime.now(), days=2)),
 ])
 stale.action_cancel()
-        </field>
-        <field name="interval_number">1</field>
-        <field name="interval_type">days</field>
-    </record>
+            </field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+
+        <record id="cron_generate_corporate_fulfillments" model="ir.cron">
+            <field name="name">Hotel: generate today's corporate service fulfillments</field>
+            <field name="model_id" ref="model_hotel_corporate_account"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_generate_daily_fulfillments()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall" eval="(DateTime.now().replace(hour=6, minute=0, second=0, microsecond=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        </record>
+
+    </data>
 </odoo>
