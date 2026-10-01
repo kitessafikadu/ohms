@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =========================================================
+         ACCOUNT — LIST
+         ========================================================= -->
+    <record id="view_hotel_corporate_account_list" model="ir.ui.view">
+        <field name="name">hotel.corporate.account.list</field>
+        <field name="model">hotel.corporate.account</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'active'"
+                  decoration-muted="state in ('ended', 'cancelled')"
+                  decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="billing_cycle"/>
+                <field name="subscription_count"/>
+                <field name="employee_count"/>
+                <field name="fulfillment_count"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'active'"
+                       decoration-muted="state in ('ended', 'cancelled')"
+                       decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         ACCOUNT — FORM
+         ========================================================= -->
+    <record id="view_hotel_corporate_account_form" model="ir.ui.view">
+        <field name="name">hotel.corporate.account.form</field>
+        <field name="model">hotel.corporate.account</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_activate" type="object"
+                            string="Activate" class="oe_highlight"
+                            groups="hotel_management.group_hotel_manager"
+                            invisible="state != 'draft'"/>
+                    <button name="action_end" type="object"
+                            string="End Contract"
+                            groups="hotel_management.group_hotel_manager"
+                            invisible="state != 'active'"/>
+                    <button name="action_generate_invoice" type="object"
+                            string="Generate Invoice"
+                            class="oe_highlight"
+                            groups="hotel_management.group_hotel_manager"
+                            invisible="state != 'active'"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            groups="hotel_management.group_hotel_manager"
+                            invisible="state in ('ended', 'cancelled')"/>
+                    <button name="action_reset_draft" type="object"
+                            string="Reset to Draft"
+                            groups="hotel_management.group_hotel_manager"
+                            invisible="state not in ('ended', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,ended"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_fulfillments" type="object"
+                                class="oe_stat_button" icon="fa-list">
+                            <field name="fulfillment_count" widget="statinfo"
+                                   string="Services"/>
+                        </button>
+                        <button name="action_view_invoices" type="object"
+                                class="oe_stat_button" icon="fa-pencil-square-o"
+                                invisible="invoice_count == 0">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Invoices"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Contract">
+                            <field name="partner_id"
+                                   options="{'no_create': True}"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="billing_cycle"/>
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"/>
+                        </group>
+                        <group string="Contact">
+                            <field name="contact_person"/>
+                            <field name="contact_email" widget="email"/>
+                            <field name="contact_phone" widget="phone"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Subscriptions" name="subscriptions">
+                            <field name="subscription_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="service_type"/>
+                                    <field name="start_time" widget="float_time"/>
+                                    <field name="end_time" widget="float_time"/>
+                                    <field name="expected_qty"/>
+                                    <field name="unit_price"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'active'"
+                                           decoration-warning="state == 'paused'"
+                                           decoration-muted="state == 'ended'"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Employees" name="employees">
+                            <field name="employee_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="employee_number"/>
+                                    <field name="department"/>
+                                    <field name="email" widget="email"/>
+                                    <field name="phone" widget="phone"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Fulfillments" name="fulfillments">
+                            <field name="fulfillment_ids">
+                                <list>
+                                    <field name="scheduled_date"/>
+                                    <field name="scheduled_time" widget="float_time"/>
+                                    <field name="subscription_id"/>
+                                    <field name="service_type"/>
+                                    <field name="expected_qty"/>
+                                    <field name="attended_qty"/>
+                                    <field name="line_total" widget="monetary"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'delivered'"
+                                           decoration-info="state == 'pending'"
+                                           decoration-muted="state == 'cancelled'"/>
+                                    <field name="billed"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         ACCOUNT — SEARCH
+         ========================================================= -->
+    <record id="view_hotel_corporate_account_search" model="ir.ui.view">
+        <field name="name">hotel.corporate.account.search</field>
+        <field name="model">hotel.corporate.account</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="contact_person"/>
+
+                <filter name="active" string="Active"
+                        domain="[('state', '=', 'active')]"/>
+                <filter name="draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="ended" string="Ended"
+                        domain="[('state', '=', 'ended')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_company" string="Company"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_cycle" string="Billing Cycle"
+                            context="{'group_by': 'billing_cycle'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         SUBSCRIPTION — FORM
+         ========================================================= -->
+    <record id="view_hotel_corporate_subscription_form" model="ir.ui.view">
+        <field name="name">hotel.corporate.subscription.form</field>
+        <field name="model">hotel.corporate.subscription</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Lunch Service"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Details">
+                            <field name="account_id"/>
+                            <field name="service_type"/>
+                            <field name="state"/>
+                        </group>
+                        <group string="Pricing">
+                            <field name="expected_qty"/>
+                            <field name="unit_price"/>
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"/>
+                        </group>
+                    </group>
+
+                    <group string="Schedule">
+                        <group>
+                            <field name="day_mon"/>
+                            <field name="day_tue"/>
+                            <field name="day_wed"/>
+                            <field name="day_thu"/>
+                        </group>
+                        <group>
+                            <field name="day_fri"/>
+                            <field name="day_sat"/>
+                            <field name="day_sun"/>
+                            <field name="day_of_week_list" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                        </group>
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+
+                    <group string="Description">
+                        <field name="description" nolabel="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Fulfillments">
+                            <field name="fulfillment_ids" readonly="1">
+                                <list>
+                                    <field name="scheduled_date"/>
+                                    <field name="expected_qty"/>
+                                    <field name="attended_qty"/>
+                                    <field name="line_total" widget="monetary"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         FULFILLMENT — FORM
+         ========================================================= -->
+    <record id="view_hotel_corporate_fulfillment_form" model="ir.ui.view">
+        <field name="name">hotel.corporate.fulfillment.form</field>
+        <field name="model">hotel.corporate.fulfillment</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_deliver" type="object"
+                            string="Mark Delivered" class="oe_highlight"
+                            invisible="state != 'pending'"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            invisible="state in ('delivered', 'cancelled')"/>
+                    <button name="action_reset_draft" type="object"
+                            string="Reset to Pending"
+                            groups="hotel_management.group_hotel_manager"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,delivered"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Service">
+                            <field name="subscription_id"/>
+                            <field name="account_id"/>
+                            <field name="service_type"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="scheduled_date"/>
+                            <field name="scheduled_time" widget="float_time"/>
+                        </group>
+                    </group>
+
+                    <group string="Fulfillment">
+                        <group>
+                            <field name="expected_qty" readonly="1"/>
+                            <field name="attended_qty"
+                                   readonly="state != 'pending'"/>
+                            <field name="unit_price"/>
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"/>
+                        </group>
+                        <group>
+                            <field name="line_total" readonly="1"/>
+                            <field name="served_by"/>
+                            <field name="served_on"/>
+                            <field name="billed" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         FULFILLMENT — LIST
+         ========================================================= -->
+    <record id="view_hotel_corporate_fulfillment_list" model="ir.ui.view">
+        <field name="name">hotel.corporate.fulfillment.list</field>
+        <field name="model">hotel.corporate.fulfillment</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'delivered' and billed"
+                  decoration-info="state == 'delivered' and not billed"
+                  decoration-muted="state == 'cancelled'"
+                  decoration-warning="state == 'pending'">
+                <field name="scheduled_date"/>
+                <field name="scheduled_time" widget="float_time"/>
+                <field name="account_id"/>
+                <field name="subscription_id"/>
+                <field name="service_type"/>
+                <field name="expected_qty"/>
+                <field name="attended_qty"/>
+                <field name="line_total" widget="monetary"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'delivered'"
+                       decoration-info="state == 'pending'"
+                       decoration-muted="state == 'cancelled'"/>
+                <field name="billed"/>
+                <field name="served_by"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         FULFILLMENT — SEARCH
+         ========================================================= -->
+    <record id="view_hotel_corporate_fulfillment_search" model="ir.ui.view">
+        <field name="name">hotel.corporate.fulfillment.search</field>
+        <field name="model">hotel.corporate.fulfillment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="account_id"/>
+                <field name="subscription_id"/>
+                <field name="scheduled_date"/>
+
+                <filter name="today" string="Today"
+                        domain="[('scheduled_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="pending" string="Pending"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter name="delivered" string="Delivered"
+                        domain="[('state', '=', 'delivered')]"/>
+                <filter name="unbilled" string="Unbilled"
+                        domain="[('state', '=', 'delivered'), ('billed', '=', False)]"/>
+
+                <separator/>
+
+                <filter name="meal" string="Meals"
+                        domain="[('service_type', '=', 'meal')]"/>
+                <filter name="tea" string="Tea / Coffee"
+                        domain="[('service_type', '=', 'tea')]"/>
+                <filter name="boardroom" string="Boardroom"
+                        domain="[('service_type', '=', 'boardroom')]"/>
+                <filter name="room" string="Rooms"
+                        domain="[('service_type', '=', 'room')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_account" string="Account"
+                            context="{'group_by': 'account_id'}"/>
+                    <filter name="group_subscription" string="Subscription"
+                            context="{'group_by': 'subscription_id'}"/>
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_service_type" string="Service Type"
+                            context="{'group_by': 'service_type'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'scheduled_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- =========================================================
+         ACTIONS
+         ========================================================= -->
+    <record id="action_hotel_corporate_account" model="ir.actions.act_window">
+        <field name="name">Corporate Accounts</field>
+        <field name="res_model">hotel.corporate.account</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_corporate_account_search"/>
+    </record>
+
+    <record id="action_hotel_corporate_fulfillment_today"
+           model="ir.actions.act_window">
+        <field name="name">Today's Services</field>
+        <field name="res_model">hotel.corporate.fulfillment</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">
+            [('scheduled_date', '=', context_today().strftime('%Y-%m-%d'))]
+        </field>
+        <field name="context">
+            {'search_default_today': 1}
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No services scheduled for today
+            </p>
+            <p>
+                Services are created automatically each morning based on
+                active subscriptions.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_hotel_corporate_fulfillment_all"
+           model="ir.actions.act_window">
+        <field name="name">All Services</field>
+        <field name="res_model">hotel.corporate.fulfillment</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hotel_corporate_fulfillment_search"/>
+    </record>
+
+</odoo>

@@ -54,7 +54,7 @@
                     <button name="action_create_invoice" type="object"
                             string="Create Invoice"
                             groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"
-                            invisible="state != 'checked_out' or invoice_status == 'invoiced'"/>
+                            invisible="state != 'checked_out' or invoice_status == 'invoiced' or is_corporate"/>
                     <button name="action_cancel" type="object"
                             string="Cancel"
                             groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"
@@ -127,6 +127,28 @@
                         <field name="id_verified_by" readonly="1"/>
                         <field name="id_verified_on" readonly="1"/>
                         <field name="id_verification_notes" readonly="1"/>
+                    </group>
+
+                    <group string="Corporate Billing">
+                        <group>
+                            <field name="corporate_account_id"
+                                   options="{'no_create': True}"/>
+                            <field name="corporate_employee_id"
+                                   options="{'no_create': True}"/>
+                            <field name="is_corporate" invisible="1"/>
+                        </group>
+                        <group>
+                            <div colspan="2"
+                                 class="alert alert-info"
+                                 invisible="not corporate_account_id">
+                                This stay will be billed to
+                                <b><field name="corporate_account_id"
+                                          readonly="1"
+                                          options="{'no_open': True}"/></b>.
+                                No individual invoice will be created for
+                                the guest.
+                            </div>
+                        </group>
                     </group>
 
                     <group string="Contact Details">

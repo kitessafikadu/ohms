@@ -96,6 +96,13 @@
                             <field name="customer_phone" widget="phone"/>
                             <field name="customer_email" widget="email"/>
                         </group>
+                        <group string="Billing Mode">
+                            <field name="billing_mode" widget="radio"
+                                    options="{'horizontal': True}"/>
+                            <field name="corporate_account_id"
+                                    options="{'no_create': True}"
+                                    invisible="billing_mode != 'corporate'"/>
+                        </group>
                         <group string="Billing">
                             <field name="company_name"/>
                             <field name="tax_id"/>

@@ -48,6 +48,25 @@
             parent="menu_hotel_events_root"
             action="action_hotel_event_today" sequence="20"/>
 
+    <!-- Corporate -->
+    <menuitem id="menu_hotel_corporate_root" name="Corporate"
+              parent="menu_hotel_root" sequence="70"
+              groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager,hotel_management.group_hotel_waitstaff"/>
+
+    <menuitem id="menu_hotel_corporate_accounts" name="Accounts"
+              parent="menu_hotel_corporate_root"
+              action="action_hotel_corporate_account" sequence="10"
+              groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"/>
+
+    <menuitem id="menu_hotel_corporate_today" name="Today's Services"
+              parent="menu_hotel_corporate_root"
+              action="action_hotel_corporate_fulfillment_today" sequence="20"/>
+
+    <menuitem id="menu_hotel_corporate_all" name="All Services"
+              parent="menu_hotel_corporate_root"
+              action="action_hotel_corporate_fulfillment_all" sequence="30"
+              groups="hotel_management.group_hotel_frontdesk,hotel_management.group_hotel_manager"/>
+
     <!-- ===== Manager (Configuration) ===== -->
     <menuitem id="menu_hotel_configuration" name="Configuration"
               parent="menu_hotel_root" sequence="90"

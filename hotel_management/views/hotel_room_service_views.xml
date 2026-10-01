@@ -71,6 +71,26 @@
                                options="{'horizontal': True}"/>
                     </group>
 
+                    <group string="Billing Target">
+                        <field name="is_corporate" invisible="1"/>
+                        <div colspan="2" class="text-muted"
+                             invisible="not reservation_id">
+                            Choose who pays for this order.
+                        </div>
+                        <field name="corporate_account_id"
+                               options="{'no_create': True}"
+                               invisible="not reservation_id"/>
+                        <field name="corporate_employee_id"
+                               options="{'no_create': True}"
+                               invisible="not corporate_account_id"/>
+                        <div colspan="2"
+                             class="alert alert-info mb-0"
+                             invisible="not corporate_account_id">
+                            Charge goes to <b>corporate account</b>. The
+                            guest's individual bill is not affected.
+                        </div>
+                    </group>
+
                     <group invisible="source != 'ad_hoc'" string="Ad-hoc F&amp;B">
                         <field name="service_id"/>
                         <field name="quantity"/>
