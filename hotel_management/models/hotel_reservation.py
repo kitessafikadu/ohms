@@ -60,6 +60,12 @@ class HotelReservation(models.Model):
 
     vehicle_plate = fields.Char(string='Vehicle Plate')
     
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
+    )
+    
     corporate_account_id = fields.Many2one(
         'hotel.corporate.account',
         string='Corporate Account',

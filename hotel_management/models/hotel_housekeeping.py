@@ -48,6 +48,12 @@ class HotelHousekeepingTask(models.Model):
         default='pending', tracking=True,
     )
 
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
+    )
+
     notes = fields.Text()
 
     @api.depends('room_id', 'task_type')

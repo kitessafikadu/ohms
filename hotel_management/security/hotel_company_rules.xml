@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="rule_company_room_category" model="ir.rule">
+        <field name="name">Room Category: multi-company</field>
+        <field name="model_id" ref="model_hotel_room_category"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_room" model="ir.rule">
+        <field name="name">Room: multi-company</field>
+        <field name="model_id" ref="model_hotel_room"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_reservation" model="ir.rule">
+        <field name="name">Reservation: multi-company</field>
+        <field name="model_id" ref="model_hotel_reservation"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_reservation_guest" model="ir.rule">
+        <field name="name">Reservation Guest: multi-company</field>
+        <field name="model_id" ref="model_hotel_reservation_guest"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_reservation_feedback" model="ir.rule">
+        <field name="name">Reservation Feedback: multi-company</field>
+        <field name="model_id" ref="model_hotel_reservation_feedback"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_reservation_package" model="ir.rule">
+        <field name="name">Reservation Package: multi-company</field>
+        <field name="model_id" ref="model_hotel_reservation_package"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_package_entitlement" model="ir.rule">
+        <field name="name">Package Entitlement: multi-company</field>
+        <field name="model_id"
+               ref="model_hotel_reservation_package_entitlement"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_housekeeping" model="ir.rule">
+        <field name="name">Housekeeping Task: multi-company</field>
+        <field name="model_id" ref="model_hotel_housekeeping_task"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_room_service" model="ir.rule">
+        <field name="name">Room Service Catalogue: multi-company</field>
+        <field name="model_id" ref="model_hotel_room_service"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_room_service_order" model="ir.rule">
+        <field name="name">Room Service Order: multi-company</field>
+        <field name="model_id" ref="model_hotel_room_service_order"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_venue" model="ir.rule">
+        <field name="name">Venue: multi-company</field>
+        <field name="model_id" ref="model_hotel_venue"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_event" model="ir.rule">
+        <field name="name">Event: multi-company</field>
+        <field name="model_id" ref="model_hotel_event"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_corporate_account" model="ir.rule">
+        <field name="name">Corporate Account: multi-company</field>
+        <field name="model_id" ref="model_hotel_corporate_account"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_corporate_subscription" model="ir.rule">
+        <field name="name">Corporate Subscription: multi-company</field>
+        <field name="model_id" ref="model_hotel_corporate_subscription"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_corporate_fulfillment" model="ir.rule">
+        <field name="name">Corporate Fulfillment: multi-company</field>
+        <field name="model_id" ref="model_hotel_corporate_fulfillment"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_company_corporate_employee" model="ir.rule">
+        <field name="name">Corporate Employee: multi-company</field>
+        <field name="model_id" ref="model_hotel_corporate_employee"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+</odoo>

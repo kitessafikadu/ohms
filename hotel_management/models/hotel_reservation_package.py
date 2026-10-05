@@ -10,6 +10,10 @@ class HotelReservationPackage(models.Model):
     reservation_id = fields.Many2one(
         'hotel.reservation', required=True, ondelete='cascade',
     )
+    company_id = fields.Many2one(
+        related='reservation_id.company_id',
+        store=True, index=True,
+    )
     package_id = fields.Many2one(
         'hotel.room.service', required=True,
         domain="[('service_type', '=', 'package'), ('active', '=', True)]",
@@ -36,7 +40,6 @@ class HotelReservationPackage(models.Model):
         return packages
 
     def _build_entitlements(self):
-        """Snapshot the package's contents into entitlements for this stay."""
         self.ensure_one()
         self.entitlement_ids.unlink()
         for line in self.package_id.package_line_ids:
@@ -59,6 +62,10 @@ class HotelReservationPackageEntitlement(models.Model):
         related='reservation_package_id.reservation_id',
         store=True, readonly=True,
     )
+    company_id = fields.Many2one(
+        related='reservation_package_id.company_id',
+        store=True, index=True,
+    )
     service_id = fields.Many2one(
         'hotel.room.service', required=True,
         domain="[('service_type', '=', 'food_beverage')]",
@@ -76,7 +83,6 @@ class HotelReservationPackageEntitlement(models.Model):
             rec.qty_remaining = max(0.0, rec.qty_included - rec.qty_used)
 
     def consume(self, quantity):
-        """Called by an order when delivered. Raises if oversubscribed."""
         self.ensure_one()
         if quantity > self.qty_remaining:
             raise UserError(

@@ -11,6 +11,10 @@ class HotelReservationGuest(models.Model):
     reservation_id = fields.Many2one(
         'hotel.reservation', required=True, ondelete='cascade',
     )
+    company_id = fields.Many2one(
+        related='reservation_id.company_id',
+        store=True, index=True,
+    )
     name = fields.Char(string='Full Name (as on ID)', required=True)
     relationship = fields.Char(help='e.g. Spouse, Child, Colleague')
 

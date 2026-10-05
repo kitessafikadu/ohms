@@ -9,6 +9,10 @@ class HotelReservationFeedback(models.Model):
     reservation_id = fields.Many2one(
         'hotel.reservation', required=True, ondelete='cascade',
     )
+    company_id = fields.Many2one(
+        related='reservation_id.company_id',
+        store=True, index=True,
+    )
     guest_id = fields.Many2one(
         related='reservation_id.guest_id', store=True,
     )

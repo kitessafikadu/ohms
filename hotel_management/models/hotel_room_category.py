@@ -42,6 +42,12 @@ class HotelRoomCategory(models.Model):
         default=lambda self: self.env.company.currency_id,
     )
 
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
+    )
+
     room_ids = fields.One2many('hotel.room', 'category_id')
     room_count = fields.Integer(compute='_compute_room_count')
     package_ids = fields.Many2many(

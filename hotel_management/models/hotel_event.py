@@ -66,6 +66,12 @@ class HotelEvent(models.Model):
          ('corporate', 'Billed to Company')],
         default='guest', required=True, tracking=True,
     )
+    
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
+    )        
         
     corporate_account_id = fields.Many2one(
         'hotel.corporate.account',

@@ -1,6 +1,6 @@
 {
     'name': 'Hotel Management',
-    'version': '18.0.1.7.0',
+    'version': '18.0.1.8.0',
     'category': 'Services',
     'summary': 'Reservations, rooms, housekeeping, F&B, events, corporate, guest portal',
     'depends': ['base', 'mail', 'website', 'portal', 'account', 'calendar'],
@@ -8,6 +8,7 @@
         'security/hotel_security.xml',
         'security/ir.model.access.csv',
         'security/hotel_record_rules.xml',
+        'security/hotel_company_rules.xml',
         'data/ir_sequence_data.xml',
         'data/ir_cron_data.xml',
         'data/hotel_room_categories.xml',

@@ -33,6 +33,12 @@ class HotelRoomService(models.Model):
         'hotel.room.service.package.line', 'package_id',
         string='Package Contents',
     )
+    
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
+    )
 
     _sql_constraints = [
         ('code_unique', 'UNIQUE(code)', 'Service code must be unique.'),

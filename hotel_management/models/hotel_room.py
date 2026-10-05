@@ -54,6 +54,12 @@ class HotelRoom(models.Model):
         compute='_compute_next_arrival_date',
         help='Date of the next confirmed check-in. Used at peak times.',
     )
+    
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
+    )
 
     _sql_constraints = [
         ('room_number_unique', 'UNIQUE(room_number)',

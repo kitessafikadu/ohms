@@ -42,6 +42,12 @@ class HotelVenue(models.Model):
 
     event_ids = fields.One2many('hotel.event', 'venue_id')
     event_count = fields.Integer(compute='_compute_event_count')
+    
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
+    )
 
     _sql_constraints = [
         ('code_unique', 'UNIQUE(code)', 'Venue code must be unique.'),

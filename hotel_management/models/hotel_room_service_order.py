@@ -65,6 +65,12 @@ class HotelRoomServiceOrder(models.Model):
         'Charged to Reservation', default=False, readonly=True, copy=False,
     )
     
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
+    )
+    
     corporate_account_id = fields.Many2one(
         'hotel.corporate.account',
         string='Corporate Account',

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
@@ -24,6 +24,11 @@ class HotelCorporateAccount(models.Model):
         default=lambda self: self.env['ir.sequence'].next_by_code(
             'hotel.corporate.account') or 'New',
         readonly=True, copy=False,
+    )
+    company_id = fields.Many2one(
+        'res.company', 'Hotel Branch',
+        default=lambda self: self.env.company,
+        index=True,
     )
     partner_id = fields.Many2one(
         'res.partner', string='Company', required=True, tracking=True,
@@ -75,7 +80,9 @@ class HotelCorporateAccount(models.Model):
     notes = fields.Text()
 
     _sql_constraints = [
-        ('name_unique', 'UNIQUE(name)', 'Account number must be unique.'),
+        ('name_company_unique',
+         'UNIQUE(name, company_id)',
+         'Account number must be unique per branch.'),
     ]
 
     @api.depends('subscription_ids')
@@ -256,6 +263,10 @@ class HotelCorporateSubscription(models.Model):
     account_id = fields.Many2one(
         'hotel.corporate.account', required=True, ondelete='cascade',
     )
+    company_id = fields.Many2one(
+        related='account_id.company_id',
+        store=True, index=True,
+    )
     service_type = fields.Selection(
         SERVICE_TYPE_SELECTION, required=True, default='meal',
     )
@@ -353,6 +364,10 @@ class HotelCorporateFulfillment(models.Model):
         'hotel.corporate.account', required=True, ondelete='cascade',
         related='subscription_id.account_id', store=True, readonly=False,
     )
+    company_id = fields.Many2one(
+        related='account_id.company_id',
+        store=True, index=True,
+    )
     service_type = fields.Selection(
         SERVICE_TYPE_SELECTION, required=True)
     scheduled_date = fields.Date(required=True, index=True)
@@ -431,6 +446,10 @@ class HotelCorporateEmployee(models.Model):
     name = fields.Char(required=True)
     account_id = fields.Many2one(
         'hotel.corporate.account', required=True, ondelete='cascade',
+    )
+    company_id = fields.Many2one(
+        related='account_id.company_id',
+        store=True, index=True,
     )
     partner_id = fields.Many2one('res.partner')
     employee_number = fields.Char()
