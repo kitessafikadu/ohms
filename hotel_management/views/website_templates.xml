@@ -87,6 +87,17 @@
                         </div>
                     </div>
 
+                    <div id="packages-row" style="display:none;">
+                        <h4 class="mt-4">Add-ons</h4>
+                        <p class="text-muted">
+                            Select any packages you'd like to include with
+                            your stay.
+                        </p>
+                        <div id="packages-container"/>
+                        <div class="text-danger small mt-1 d-none"
+                             id="error_packages"/>
+                    </div>
+
                     <h4 class="mt-4">Guest Information</h4>
 
                     <div class="row">
@@ -248,6 +259,51 @@
                         for (var i = 0; i < ids.length; i++) {
                             setFieldError(ids[i], null);
                         }
+                    }
+
+                    function loadPackages(categoryId) {
+                        var row = document.getElementById('packages-row');
+                        var container = document.getElementById(
+                            'packages-container');
+                        if (!row || !container) return;
+
+                        if (!categoryId) {
+                            row.style.display = 'none';
+                            container.innerHTML = '';
+                            return;
+                        }
+
+                        fetch('/hotel/packages/' + categoryId)
+                            .then(function (r) {
+                                if (!r.ok) throw new Error('HTTP ' + r.status);
+                                return r.json();
+                            })
+                            .then(function (pkgs) {
+                                if (!pkgs.length) {
+                                    row.style.display = 'none';
+                                    container.innerHTML = '';
+                                    return;
+                                }
+                                row.style.display = '';
+                                container.innerHTML = pkgs.map(function (p) {
+                                    var desc = p.description
+                                        ? '<small class="text-muted d-block">' + p.description + '</small>'
+                                        : '';
+                                    return '<div class="form-check mb-2">' +
+                                        '<input class="form-check-input" type="checkbox" ' +
+                                        'name="package_ids" value="' + p.id + '" ' +
+                                        'id="pkg_' + p.id + '">' +
+                                        '<label class="form-check-label" for="pkg_' + p.id + '">' +
+                                        '<b>' + p.name + '</b> — ' + p.price +
+                                        desc +
+                                        '</label>' +
+                                        '</div>';
+                                }).join('');
+                            })
+                            .catch(function (err) {
+                                row.style.display = 'none';
+                                console.error('Package fetch failed:', err);
+                            });
                     }
 
                     function loadRooms(categoryId) {
@@ -415,9 +471,11 @@
                         if (cat) {
                             cat.addEventListener('change', function () {
                                 loadRooms(this.value);
+                                loadPackages(this.value);
                             });
                             if (cat.value) {
                                 loadRooms(cat.value);
+                                loadPackages(cat.value);
                             }
                         }
 

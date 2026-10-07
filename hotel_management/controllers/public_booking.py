@@ -224,6 +224,22 @@ class HotelPublicBooking(http.Controller):
             for r in rooms
         ])
 
+    @http.route('/hotel/packages/<int:category_id>', type='http',
+                auth='public', website=True)
+    def packages_by_category(self, category_id, **kw):
+        Category = request.env['hotel.room.category'].sudo()
+        category = Category.browse(category_id)
+        if not category.exists():
+            return request.make_json_response([])
+        return request.make_json_response([
+            {
+                'id': p.id,
+                'name': p.name,
+                'price': p.unit_price,
+                'description': p.description or '',
+            }
+            for p in category.package_ids.filtered(lambda p: p.active)
+        ])
     @http.route('/hotel/book/submit', type='http', auth='public',
                 website=True, methods=['POST'], csrf=True)
     def booking_submit(self, **post):
@@ -281,6 +297,24 @@ class HotelPublicBooking(http.Controller):
                 'special_requests': post.get('special_requests'),
                 'state': 'draft',
             })
+
+            # Attach selected packages (validate they belong to category)
+            valid_pkg_ids = reservation.category_id.package_ids.ids
+            selected_pkgs = request.httprequest.form.getlist('package_ids')
+            for pkg_id in selected_pkgs:
+                try:
+                    pkg_id_int = int(pkg_id)
+                except (TypeError, ValueError):
+                    continue
+                if pkg_id_int not in valid_pkg_ids:
+                    continue
+                service = request.env['hotel.room.service'].sudo().browse(
+                    pkg_id_int)
+                request.env['hotel.reservation.package'].sudo().create({
+                    'reservation_id': reservation.id,
+                    'package_id': service.id,
+                    'price': service.unit_price,
+                })
         except Exception as e:
             request.env.cr.rollback()
             encoded = urllib.parse.quote(json.dumps({'__general__': str(e)}))
