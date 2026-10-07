@@ -416,11 +416,10 @@ class HotelCorporateFulfillment(models.Model):
                 raise UserError(
                     'Only pending fulfillments can be delivered.')
             if rec.attended_qty <= 0:
-                raise UserError({
-                    'attended_qty':
-                        'Enter how many people were served before '
-                        'marking as delivered.'
-                })
+                raise UserError(
+                    'Enter how many people were served before marking '
+                    'as delivered.'
+                )
             rec.state = 'delivered'
             rec.served_on = fields.Datetime.now()
             if not rec.served_by:
